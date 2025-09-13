@@ -1,0 +1,11 @@
+[project]
+name = "python-transcript-downloader"
+version = "0.1.0"
+description = "A Lambda function to download YouTube video transcripts"
+readme = "README.md"
+requires-python = ">=3.12.4"
+dependencies = [
+    "boto3>=1.40.19",
+    "pydantic>=2.11.7",
+    "youtube-transcript-api>=1.2.2",
+]

@@ -1,0 +1,8 @@
+{
+  "name": "youtube-lambdas",
+  "version": "1.0.0",
+  "dependencies": {
+    "@supadata/js": "^1.2.0",
+    "xml2js": "^0.6.2"
+  }
+}
