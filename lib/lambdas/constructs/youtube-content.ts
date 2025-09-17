@@ -11,6 +11,7 @@ import { awsSdkModuleName } from '../../consts'
 import { LLMParams } from '../../env.types'
 import { PythonFunction, PythonLayerVersion } from '@aws-cdk/aws-lambda-python-alpha'
 import { lambdaFactory } from '../utils/lambda.utils'
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 type YoutubeContentProps = Readonly<{
     table: ITableV2
@@ -114,12 +115,20 @@ export class YoutubeContent extends Construct {
             nodeModules: ['@supadata/js'],
             timeout: 300
         })
-        this.transcriptSummaryFunction = createLambda('TranscriptSummarization', 'transcript-summarizer.ts', {
+        const transcriptSummaryFunction = createLambda('TranscriptSummarization', 'transcript-summarizer.ts', {
             timeout: 300,
             layerDefs: [geminiLayerDefinition],
             env: { LLM_PARAMS: JSON.stringify(llmParams) },
             memorySize: 512
         })
+
+        transcriptSummaryFunction.addToRolePolicy(
+            new PolicyStatement({
+                actions: ['bedrock:InvokeModel'],
+                resources: ['*']
+            })
+        )
+        this.transcriptSummaryFunction = transcriptSummaryFunction
 
         this.chatSenderFunction = createLambda('NewsChatMessageSender', 'news-message-sender.ts')
     }
