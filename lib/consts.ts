@@ -9,6 +9,8 @@ export enum MainTable {
     TIMESTAMP_NAME = 'timestampIndex'
 }
 
+export const PROCESSING_MODE_INDEX = 'processingModeIndex'
+
 export enum AcceptablePK {
     YOUTUBE_NOTIFICATION = 'YOUTUBE_NOTIFICATION',
     YOUTUBE_VIDEO = 'YOUTUBE_VIDEO',

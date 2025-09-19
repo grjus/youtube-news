@@ -3,7 +3,7 @@ import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { EnvConfig } from './env.types'
 import { Topic } from 'aws-cdk-lib/aws-sns'
-import { awsSdkModuleName, MainTable, STATE_MACHINE_ARN_ATTR } from './consts'
+import { PROCESSING_MODE_INDEX, awsSdkModuleName, MainTable, STATE_MACHINE_ARN_ATTR } from './consts'
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { StringParameter } from 'aws-cdk-lib/aws-ssm'
@@ -19,6 +19,7 @@ import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { YoutubeNewsApi } from './lambdas/constructs/youtube-subscription-api'
 import { YoutubePubSub } from './lambdas/constructs/youtube-pubsub'
+import { lambdaFactory } from './lambdas/utils/lambda.utils'
 
 export class BaseStack extends Stack {
     constructor(
@@ -70,6 +71,18 @@ export class BaseStack extends Stack {
         })
         mainTable.addLocalSecondaryIndex({
             indexName: MainTable.TIMESTAMP_NAME,
+            sortKey: {
+                name: MainTable.TIMESTAMP,
+                type: AttributeType.NUMBER
+            }
+        })
+
+        mainTable.addGlobalSecondaryIndex({
+            indexName: PROCESSING_MODE_INDEX,
+            partitionKey: {
+                name: 'processingMode',
+                type: AttributeType.STRING
+            },
             sortKey: {
                 name: MainTable.TIMESTAMP,
                 type: AttributeType.NUMBER
@@ -163,7 +176,26 @@ export class BaseStack extends Stack {
         youtubeNotificationsReceiverFunction.addEnvironment(STATE_MACHINE_ARN_ATTR, stateMachine.stateMachineArn)
         stateMachine.grantStartExecution(youtubeNotificationsReceiverFunction)
 
+        const scheduledNotificationPoller = lambdaFactory(this, {
+            id: 'ScheduledNotificationPollerFunction',
+            removalPolicy,
+            retention: logRetention,
+            entry: join('lib', 'lambdas', 'scheduled-video-poller.ts'),
+            handler: 'handler',
+            environment: {
+                TABLE_NAME: mainTable.tableName,
+                SECRET_NAME: secret.secretName,
+                STATE_MACHINE_ARN: stateMachine.stateMachineArn
+            },
+            layers: [axiosLayer],
+            externalModules: [awsSdkModuleName, axiosClientLayerParams.moduleName]
+        })
+        secret.grantRead(scheduledNotificationPoller)
+        mainTable.grantReadWriteData(scheduledNotificationPoller)
+        stateMachine.grantStartExecution(scheduledNotificationPoller)
+
         rule.addTarget(new LambdaFunction(subscriptionRenewalDispatcher))
+        rule.addTarget(new LambdaFunction(scheduledNotificationPoller))
 
         new CfnOutput(this, 'MainTableArn', {
             value: mainTable.tableName,

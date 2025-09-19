@@ -3,9 +3,10 @@ import { toYoutubeNotification, toYoutubeNotificationEntity } from './utils/mapp
 import { getSecretValue } from './client/sm.client'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import { DedupItem } from '../main.types'
+import { DedupItem, YoutubeNotificationProcessingMode } from '../main.types'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
+import { checkVideoType } from './utils/youtube.utils'
 
 const tableName = process.env.TABLE_NAME!
 const stateMachineArn = process.env.STATE_MACHINE_ARN
@@ -39,14 +40,22 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
     console.log('Signature verified successfully.')
 
-    const videoMessage = await toYoutubeNotification(event.body)
-    if (!videoMessage) {
+    const baseNotification = await toYoutubeNotification(event.body)
+    if (!baseNotification) {
         console.warn('Invalid video message. Rejecting request.')
         return { statusCode: 200, body: 'OK' }
     }
 
-    if (isOlderThan24Hours(videoMessage.publishedAt, now)) {
-        throw new Error(`Video older than 24 hours: ${JSON.stringify(videoMessage)}`)
+    if (isOlderThan24Hours(baseNotification.publishedAt, now)) {
+        throw new Error(`Video older than 24 hours: ${JSON.stringify(baseNotification)}`)
+    }
+
+    const videoType = await checkVideoType(baseNotification.videoId, secret.YOUTUBE_API_KEY)
+    const processingMode: YoutubeNotificationProcessingMode =
+        videoType === 'LIVE' || videoType === 'UPCOMING' ? 'SCHEDULED' : 'IMMEDIATE'
+    const videoMessage = {
+        ...baseNotification,
+        processingMode
     }
 
     const dedupeKey = `WEBSUB#${videoMessage.channelId}:${videoMessage.videoId}`
@@ -72,15 +81,21 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
                 Item: marshall(toYoutubeNotificationEntity(videoMessage, now))
             })
         )
-        const stateMachineExecution = await sfnClient.send(
-            new StartExecutionCommand({
-                input: JSON.stringify(videoMessage),
-                stateMachineArn
-            })
-        )
-        console.log(
-            `Execution started: ${stateMachineExecution.executionArn}. Start date: ${stateMachineExecution.startDate}`
-        )
+        if (processingMode === 'IMMEDIATE') {
+            const stateMachineExecution = await sfnClient.send(
+                new StartExecutionCommand({
+                    input: JSON.stringify(videoMessage),
+                    stateMachineArn
+                })
+            )
+            console.log(
+                `Execution started: ${stateMachineExecution.executionArn}. Start date: ${stateMachineExecution.startDate}`
+            )
+        } else {
+            console.log(
+                `Notification stored for scheduled polling: channel=${videoMessage.channelId}, video=${videoMessage.videoId}`
+            )
+        }
     } catch (err: unknown) {
         if (
             typeof err === 'object' &&

@@ -66,7 +66,8 @@ export class YoutubeNewsApi extends Construct {
                 SECRET_NAME: secret.secretName
             },
             nodeModules: ['xml2js'],
-            externalModules: [awsSdkModuleName]
+            layers: [axiosLayerDef.layer],
+            externalModules: [awsSdkModuleName, axiosLayerDef.moduleName]
         })
         table.grantReadWriteData(youtubeNotificationsReceiverFunction)
         secret.grantRead(youtubeNotificationsReceiverFunction)

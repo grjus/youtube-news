@@ -9,8 +9,14 @@ import {
     UpdateItemCommandInput
 } from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
-import { AcceptablePK, MainTable } from '../../consts'
-import { MainItem, SubscribedChannelItem, TelegramChannelItem, VideoGenre } from '../../main.types'
+import { AcceptablePK, MainTable, PROCESSING_MODE_INDEX } from '../../consts'
+import {
+    MainItem,
+    SubscribedChannelItem,
+    TelegramChannelItem,
+    VideoGenre,
+    YoutubeNotificationItem
+} from '../../main.types'
 
 export const putItem = async <T extends MainItem>(
     item: T,
@@ -169,3 +175,33 @@ export const getTelegramChannel = async (
     tableName: string,
     dynamoClient: DynamoDBClient
 ): Promise<TelegramChannelItem | null> => getItem(AcceptablePK.TELEGRAM_CHANNEL, genre, tableName, dynamoClient)
+
+export const getScheduledNotifications = async (
+    dynamoClient: DynamoDBClient,
+    tableName: string,
+    cutoffTimestamp: number,
+    limit = 25
+): Promise<YoutubeNotificationItem[]> => {
+    const params: QueryCommandInput = {
+        TableName: tableName,
+        IndexName: PROCESSING_MODE_INDEX,
+        KeyConditionExpression: '#pm = :pm AND #ts <= :cutoff',
+        ExpressionAttributeNames: {
+            '#pm': 'processingMode',
+            '#ts': MainTable.TIMESTAMP
+        },
+        ExpressionAttributeValues: {
+            ':pm': { S: 'SCHEDULED' },
+            ':cutoff': { N: cutoffTimestamp.toString() }
+        },
+        Limit: limit
+    }
+
+    const command = new QueryCommand(params)
+    const { Items } = await dynamoClient.send(command)
+    if (!Items) {
+        return []
+    }
+
+    return Items.map((item) => unmarshall(item) as YoutubeNotificationItem)
+}
