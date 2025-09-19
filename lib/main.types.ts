@@ -2,6 +2,8 @@ import { AcceptablePK, ERROR_OUTPUT_ATTR_KEY, MainTable, MessageType, VIDEO_GENR
 import { UUID } from 'node:crypto'
 import { ILayerVersion } from 'aws-cdk-lib/aws-lambda'
 
+export type YoutubeNotificationProcessingMode = 'IMMEDIATE' | 'SCHEDULED'
+
 export interface YoutubeNotificationItem extends MainItem {
     [MainTable.PK]: `${AcceptablePK.YOUTUBE_NOTIFICATION}/${string}`
     [MainTable.SK]: string
@@ -13,6 +15,7 @@ export interface YoutubeNotificationItem extends MainItem {
     channelUri: string
     publishedAt: number
     createdAt: number
+    processingMode: YoutubeNotificationProcessingMode
 }
 
 export interface TimeStamps {
@@ -199,6 +202,7 @@ export type YoutubeNotification = Readonly<{
     channelTitle: string
     channelUri: string
     publishedAt: number
+    processingMode: YoutubeNotificationProcessingMode
 }>
 
 export type YoutubeVideo = Readonly<{

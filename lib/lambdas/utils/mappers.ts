@@ -20,13 +20,15 @@ export const toYoutubeNotification = async (xmlPayload: string): Promise<null | 
         return null
     }
     const videoId = entry['yt:videoId'][0]
+    const publishedAt = new Date(entry['published'][0]).getTime()
     return {
         videoId,
         channelId: entry['yt:channelId'][0],
         videoTitle: entry['title'][0],
         channelTitle: entry['author'][0]['name'][0],
         channelUri: entry['author'][0]['uri'][0],
-        publishedAt: new Date(entry['published'][0]).getTime()
+        publishedAt,
+        processingMode: 'IMMEDIATE'
     } satisfies YoutubeNotification
 }
 
@@ -89,7 +91,8 @@ export const toYoutubeNotificationEntity = (payload: YoutubeNotification, now: n
     channelUri: payload.channelUri,
     publishedAt: payload.publishedAt,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
+    processingMode: payload.processingMode
 })
 
 export const toYoutubeVideo = (payload: YoutubeVideoItem): YoutubeVideo => ({

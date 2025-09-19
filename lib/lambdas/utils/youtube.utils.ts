@@ -14,21 +14,21 @@ export const checkVideoType = async (videoId: string, youtubeApiKey: string): Pr
         return 'UNKNOWN'
     }
 
-    const dur = v.contentDetails?.duration ?? 'PT0S'
-    const seconds = iso8601ToSeconds(dur)
-    if (seconds <= 180) {
-        return 'SHORT'
-    }
-    if (seconds > 7200) {
-        return 'LONG'
-    }
+    const liveBroadcastContent = v.snippet.liveBroadcastContent
+    if (liveBroadcastContent === 'live') return 'LIVE'
+    if (liveBroadcastContent === 'upcoming') return 'UPCOMING'
+    if (liveBroadcastContent === 'none') {
+        const dur = v.contentDetails?.duration ?? 'PT0S'
+        const seconds = iso8601ToSeconds(dur)
+        if (seconds <= 180) {
+            return 'SHORT'
+        }
+        if (seconds > 7200) {
+            return 'LONG'
+        }
 
-    const lsd = v.liveStreamingDetails
-    if (!lsd) return 'VIDEO'
-    if (lsd) {
-        if (lsd.actualEndTime) return 'COMPLETED'
-        if (lsd.actualStartTime) return 'LIVE'
-        if (lsd.scheduledStartTime) return 'UPCOMING'
+        const lsd = v.liveStreamingDetails
+        if (!lsd) return 'VIDEO'
     }
 
     return 'UNKNOWN'
