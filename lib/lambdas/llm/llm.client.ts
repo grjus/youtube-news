@@ -24,6 +24,7 @@ export const invokeBedrockModel = async (
 
     try {
         console.info(`Invoking bedrock with prompt:${JSON.stringify(userPrompt, null, 2)}`)
+        const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
         const bedrockResponse = await bedrockClient.send(
             new ConverseCommand({
                 modelId: llmParams.bedrockProps.modelId,
@@ -36,9 +37,9 @@ export const invokeBedrockModel = async (
                     }
                 ],
                 inferenceConfig: {
-                    temperature: llmParams.inferenceProfile[genre].temperature,
-                    maxTokens: llmParams.inferenceProfile[genre].temperature,
-                    topP: llmParams.inferenceProfile[genre].temperature
+                    temperature,
+                    maxTokens,
+                    topP
                 }
             })
         )
@@ -68,9 +69,7 @@ export const invokeGeminiModel = async (
         const userPrompt = getPrompt(genre, transcription)
         const systemPrompt = getGeminiSystemPrompt(genre)
         const responseSchema = getGeminiResponseSchema(genre)
-
         const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
-
         const secret = await getSecretValue(secretName)
         const ai = new GoogleGenAI({ apiKey: secret?.GEMINI_API_KEY })
         const response = await ai.models.generateContent({
