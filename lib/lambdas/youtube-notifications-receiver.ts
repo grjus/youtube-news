@@ -42,8 +42,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
     const baseNotification = await toYoutubeNotification(event.body)
     if (!baseNotification) {
-        console.warn('Invalid video message. Rejecting request.')
-        return { statusCode: 200, body: 'OK' }
+        throw new Error(`Invalid video message: ${event.body}`)
     }
 
     if (isOlderThan24Hours(baseNotification.publishedAt, now)) {

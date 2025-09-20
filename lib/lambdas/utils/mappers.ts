@@ -14,22 +14,28 @@ import {
 import { AcceptablePK, MessageType, VIDEO_TYPE_KEY } from '../../consts'
 
 export const toYoutubeNotification = async (xmlPayload: string): Promise<null | YoutubeNotification> => {
-    const parsedXml = await parseStringPromise(xmlPayload)
-    const entry = parsedXml['feed']['entry'][0]
-    if (!entry || !entry['yt:videoId']) {
+    try {
+        const parsedXml = await parseStringPromise(xmlPayload)
+        console.log('Parsed XML:', JSON.stringify(parsedXml, null, 2))
+        const entry = parsedXml['feed']['entry'][0]
+        if (!entry || !entry['yt:videoId']) {
+            return null
+        }
+        const videoId = entry['yt:videoId'][0]
+        const publishedAt = new Date(entry['published'][0]).getTime()
+        return {
+            videoId,
+            channelId: entry['yt:channelId'][0],
+            videoTitle: entry['title'][0],
+            channelTitle: entry['author'][0]['name'][0],
+            channelUri: entry['author'][0]['uri'][0],
+            publishedAt,
+            processingMode: 'IMMEDIATE'
+        } satisfies YoutubeNotification
+    } catch (error) {
+        console.error('Failed to parse XML payload', error)
         return null
     }
-    const videoId = entry['yt:videoId'][0]
-    const publishedAt = new Date(entry['published'][0]).getTime()
-    return {
-        videoId,
-        channelId: entry['yt:channelId'][0],
-        videoTitle: entry['title'][0],
-        channelTitle: entry['author'][0]['name'][0],
-        channelUri: entry['author'][0]['uri'][0],
-        publishedAt,
-        processingMode: 'IMMEDIATE'
-    } satisfies YoutubeNotification
 }
 
 export const toVideoTranscript = (payload: TranscriptVideoItem): TranscriptVideo => ({
