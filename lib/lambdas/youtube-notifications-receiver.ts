@@ -46,16 +46,16 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         return { statusCode: 200, body: 'OK' }
     }
 
-    if (isOlderThan24Hours(baseNotification.publishedAt, now)) {
-        throw new Error(`Video older than 24 hours: ${JSON.stringify(baseNotification)}`)
-    }
-
     const videoType = await checkVideoType(baseNotification.videoId, secret.YOUTUBE_API_KEY)
     const processingMode: YoutubeNotificationProcessingMode =
         videoType === 'LIVE' || videoType === 'UPCOMING' ? 'SCHEDULED' : 'IMMEDIATE'
     const videoMessage = {
         ...baseNotification,
         processingMode
+    }
+    if (isOlderThan24Hours(baseNotification.publishedAt, now) && videoType !== 'UPCOMING') {
+        console.warn(`Video older than 24 hours: ${JSON.stringify(baseNotification)}`)
+        return { statusCode: 200, body: 'OK' }
     }
 
     const dedupeKey = `WEBSUB#${videoMessage.channelId}:${videoMessage.videoId}`
