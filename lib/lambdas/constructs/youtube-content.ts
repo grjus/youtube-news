@@ -24,7 +24,6 @@ type YoutubeContentProps = Readonly<{
 }>
 
 export class YoutubeContent extends Construct {
-    readonly detailsFunction: NodejsFunction
     readonly transcriptionFunction: NodejsFunction
     readonly pythonTranscriptionFunction: PythonFunction
     readonly transcriptSummaryFunction: NodejsFunction
@@ -110,7 +109,6 @@ export class YoutubeContent extends Construct {
         secret.grantRead(pythonLambda)
         this.pythonTranscriptionFunction = pythonLambda
 
-        this.detailsFunction = createLambda('YoutubeDetails', 'youtube-details-provider.ts')
         this.transcriptionFunction = createLambda('YoutubeTranscription', 'transcription-provider.ts', {
             nodeModules: ['@supadata/js'],
             timeout: 300

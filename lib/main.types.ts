@@ -3,20 +3,7 @@ import { UUID } from 'node:crypto'
 import { ILayerVersion } from 'aws-cdk-lib/aws-lambda'
 
 export type YoutubeNotificationProcessingMode = 'IMMEDIATE' | 'SCHEDULED'
-
-export interface YoutubeNotificationItem extends MainItem {
-    [MainTable.PK]: `${AcceptablePK.YOUTUBE_NOTIFICATION}/${string}`
-    [MainTable.SK]: string
-    [MainTable.TIMESTAMP]: number
-    videoId: string
-    channelId: string
-    videoTitle: string
-    channelTitle: string
-    channelUri: string
-    publishedAt: number
-    createdAt: number
-    processingMode: YoutubeNotificationProcessingMode
-}
+export type YoutubeCaptionType = 'AUTO_GENERATED' | 'USER_GENERATED' | 'NONE'
 
 export interface TimeStamps {
     createdAt: number
@@ -28,7 +15,6 @@ export type AcceptablePKValue =
     | `${AcceptablePK.YOUTUBE_NOTIFICATION}/${string}`
     | `${AcceptablePK.TRANSCRIPTION}/${string}`
     | `${AcceptablePK.SUMMARY}/${string}`
-    | `${AcceptablePK.DEDUP}/${string}`
     | AcceptablePK.SUBSCRIBED_CHANNEL
     | AcceptablePK.TELEGRAM_CHANNEL
 
@@ -36,6 +22,22 @@ export interface MainItem extends TimeStamps {
     [MainTable.PK]: AcceptablePKValue
     [MainTable.SK]: string
     expireAt?: number
+}
+
+export interface YoutubeNotificationItem extends MainItem {
+    [MainTable.PK]: `${AcceptablePK.YOUTUBE_NOTIFICATION}/${string}`
+    [MainTable.SK]: string
+    [MainTable.TIMESTAMP]: number
+    videoId: string
+    channelId: string
+    videoTitle: string
+    channelTitle: string
+    channelUri: string
+    publishedAt: number
+    caption: YoutubeCaptionType
+    genre: Exclude<VideoGenre, 'ALARM'>
+    [VIDEO_TYPE_KEY]: YoutubeVideoType
+    processingMode: YoutubeNotificationProcessingMode
 }
 
 export interface TelegramChannelItem extends MainItem {
@@ -46,7 +48,7 @@ export interface TelegramChannelItem extends MainItem {
 
 export interface YoutubeVideoItem extends MainItem {
     [MainTable.PK]: `${AcceptablePK.YOUTUBE_VIDEO}/${string}`
-    [MainTable.SK]: UUID
+    [MainTable.SK]: string
     [MainTable.TIMESTAMP]: number
     [VIDEO_TYPE_KEY]: YoutubeVideoType
     [VIDEO_GENRE_KEY]: Exclude<VideoGenre, 'ALARM'>
@@ -56,6 +58,8 @@ export interface YoutubeVideoItem extends MainItem {
     channelTitle: string
     channelUri: string
     publishedAt: number
+    caption: YoutubeCaptionType
+    processingMode: YoutubeNotificationProcessingMode
 }
 
 export interface TranscriptVideoItem extends MainItem {
@@ -89,12 +93,6 @@ export type LayerDefinition = Readonly<{
     layer: ILayerVersion
     moduleName: string
 }>
-
-export interface DedupItem extends MainItem {
-    [MainTable.PK]: `${AcceptablePK.DEDUP}/${string}`
-    [MainTable.SK]: string
-    [MainTable.TIMESTAMP]: number
-}
 
 export interface SubscribedChannelItem extends MainItem {
     [MainTable.PK]: AcceptablePK.SUBSCRIBED_CHANNEL
@@ -203,11 +201,14 @@ export type YoutubeNotification = Readonly<{
     channelUri: string
     publishedAt: number
     processingMode: YoutubeNotificationProcessingMode
+    caption: YoutubeCaptionType
+    genre: Exclude<VideoGenre, 'ALARM'>
+    [VIDEO_TYPE_KEY]: YoutubeVideoType
 }>
 
 export type YoutubeVideo = Readonly<{
     type: MessageType.YOUTUBE_VIDEO
-    id: UUID
+    id: string
     [VIDEO_TYPE_KEY]: YoutubeVideoType
     [VIDEO_GENRE_KEY]: Exclude<VideoGenre, 'ALARM'>
     videoId: string
@@ -217,5 +218,7 @@ export type YoutubeVideo = Readonly<{
     channelUri: string
     publishedAt: number
     updatedAt: number
+    processingMode: YoutubeNotificationProcessingMode
+    caption: YoutubeCaptionType
 }> &
     Message

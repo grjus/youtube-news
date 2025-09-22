@@ -17,6 +17,7 @@ import { awsSdkModuleName } from '../../consts'
 import { LayerDefinition, VideoGenre } from '../../main.types'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { IQueue } from 'aws-cdk-lib/aws-sqs'
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 
 export interface YoutubeApiProps {
     domainPrefix: string
@@ -26,17 +27,26 @@ export interface YoutubeApiProps {
     table: ITable
     secret: ISecret
     deadLetterQueue: IQueue
+    youtubeNotificationsQueue: IQueue
 }
 
 export class YoutubeNewsApi extends Construct {
     public readonly api: RestApi
     public readonly youtubePubSubUrl: string
-    public readonly youtubeNotificationsReceiverFunction: NodejsFunction
+    public readonly youtubeNotificationsProcessorFunction: NodejsFunction
 
     constructor(
         scope: Construct,
         id: string,
-        { removalPolicy, table, secret, retention, axiosLayerDef, deadLetterQueue }: YoutubeApiProps
+        {
+            removalPolicy,
+            table,
+            secret,
+            retention,
+            axiosLayerDef,
+            deadLetterQueue,
+            youtubeNotificationsQueue
+        }: YoutubeApiProps
     ) {
         super(scope, id)
 
@@ -62,6 +72,22 @@ export class YoutubeNewsApi extends Construct {
             entry: join('lib', 'lambdas', 'youtube-notifications-receiver.ts'),
             handler: 'handler',
             environment: {
+                YOUTUBE_NOTIFICATIONS_QUEUE: youtubeNotificationsQueue.queueUrl,
+                SECRET_NAME: secret.secretName
+            },
+            externalModules: [awsSdkModuleName],
+            deadLetterQueue
+        })
+        table.grantReadWriteData(youtubeNotificationsReceiverFunction)
+        secret.grantRead(youtubeNotificationsReceiverFunction)
+
+        const youtubeNotificationsProcessorFunction = lambdaFactory(this, {
+            id: 'YoutubeNotificationsProcessorFunction',
+            removalPolicy,
+            retention,
+            entry: join('lib', 'lambdas', 'youtube-notification-processor.ts'),
+            handler: 'handler',
+            environment: {
                 TABLE_NAME: table.tableName,
                 SECRET_NAME: secret.secretName
             },
@@ -70,9 +96,16 @@ export class YoutubeNewsApi extends Construct {
             externalModules: [awsSdkModuleName, axiosLayerDef.moduleName],
             deadLetterQueue
         })
-        table.grantReadWriteData(youtubeNotificationsReceiverFunction)
-        secret.grantRead(youtubeNotificationsReceiverFunction)
-        this.youtubeNotificationsReceiverFunction = youtubeNotificationsReceiverFunction
+
+        table.grantReadWriteData(youtubeNotificationsProcessorFunction)
+        secret.grantRead(youtubeNotificationsProcessorFunction)
+
+        youtubeNotificationsProcessorFunction.addEventSource(
+            new SqsEventSource(youtubeNotificationsQueue, { batchSize: 5 })
+        )
+        youtubeNotificationsQueue.grantConsumeMessages(youtubeNotificationsProcessorFunction)
+
+        this.youtubeNotificationsProcessorFunction = youtubeNotificationsProcessorFunction
 
         const createSubscriptionChannelFunction = lambdaFactory(this, {
             id: 'CreateSubscriptionChannel',

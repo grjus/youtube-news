@@ -4,7 +4,7 @@ import { marshall } from '@aws-sdk/util-dynamodb'
 import { getSecretValue } from './client/sm.client'
 import { getScheduledNotifications } from './utils/dynamo.utils'
 import { checkVideoType } from './utils/youtube.utils'
-import { MainTable } from '../consts'
+import { MainTable, VIDEO_TYPE_KEY } from '../consts'
 import { YoutubeNotification, YoutubeNotificationItem } from '../main.types'
 
 const dynamoClient = new DynamoDBClient()
@@ -44,7 +44,10 @@ export const handler = async () => {
                 channelTitle: item.channelTitle,
                 channelUri: item.channelUri,
                 publishedAt: item.publishedAt,
-                processingMode: 'IMMEDIATE'
+                processingMode: 'IMMEDIATE',
+                caption: item.caption,
+                genre: item.genre,
+                [VIDEO_TYPE_KEY]: videoType
             }
 
             const execution = await sfnClient.send(

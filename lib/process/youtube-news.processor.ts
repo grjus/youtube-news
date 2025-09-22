@@ -2,7 +2,7 @@ import { Construct } from 'constructs'
 import { ITableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Duration, RemovalPolicy } from 'aws-cdk-lib'
-import { LayerDefinition, YoutubeVideoType } from '../main.types'
+import { LayerDefinition } from '../main.types'
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks'
 import {
     Chain,
@@ -18,7 +18,7 @@ import { ISecret } from 'aws-cdk-lib/aws-secretsmanager'
 import { LLMParams } from '../env.types'
 import { YoutubeContent } from '../lambdas/constructs/youtube-content'
 import { YoutubeAlarms } from '../lambdas/constructs/youtube-alarms'
-import { ERROR_OUTPUT_ATTR_KEY, VIDEO_TYPE_KEY } from '../consts'
+import { ERROR_OUTPUT_ATTR_KEY } from '../consts'
 
 export type YoutubeVideoProcessorFlowProps = Readonly<{
     mainTable: ITableV2
@@ -52,21 +52,16 @@ export class YoutubeVideoProcessorFlow extends Construct {
     ) {
         super(scope, id)
 
-        const {
-            detailsFunction,
-            transcriptionFunction,
-            pythonTranscriptionFunction,
-            transcriptSummaryFunction,
-            chatSenderFunction
-        } = new YoutubeContent(this, 'YoutubeLambdaFactory', {
-            table: mainTable,
-            logRetention,
-            removalPolicy,
-            secret,
-            axiosLayerDefinition: axiosLayerDef,
-            geminiLayerDefinition: geminiLayerDef,
-            llmParams
-        })
+        const { transcriptionFunction, pythonTranscriptionFunction, transcriptSummaryFunction, chatSenderFunction } =
+            new YoutubeContent(this, 'YoutubeLambdaFactory', {
+                table: mainTable,
+                logRetention,
+                removalPolicy,
+                secret,
+                axiosLayerDefinition: axiosLayerDef,
+                geminiLayerDefinition: geminiLayerDef,
+                llmParams
+            })
 
         const videoPythonTranscriptionStep = new LambdaInvoke(this, 'Python: Transcriptions', {
             lambdaFunction: pythonTranscriptionFunction,
@@ -88,41 +83,26 @@ export class YoutubeVideoProcessorFlow extends Construct {
             outputPath: '$.Payload'
         })
 
-        const { onSummaryError, onDetailsError, onNotProcessed, onTranscriptError, onChatError, success } =
+        const { onSummaryError, onTranscriptError, onChatError, success } =
             new YoutubeAlarms(this, 'YoutubeAlarms', {
                 alarmTopic
             })
 
-        const transcriptionFlow = Chain.start(videoPythonTranscriptionStep).next(
-            new Choice(this, 'Python:Transcription available?')
-                .when(
-                    Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`),
-                    Chain.start(videoSupadataTranscriptionStep).next(
-                        new Choice(this, 'Supadata:Transcription available?')
-                            .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onTranscriptError)
-                            .otherwise(transcriptSummarizationStep)
-                    )
-                )
+        const supadataFallbackFlow = Chain.start(videoSupadataTranscriptionStep).next(
+            new Choice(this, 'Supadata:Transcription available?')
+                .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onTranscriptError)
                 .otherwise(transcriptSummarizationStep)
+                .afterwards()
         )
 
-        const chain = new LambdaInvoke(this, 'Get Video Details', {
-            lambdaFunction: detailsFunction,
-            outputPath: '$.Payload'
-        })
-            .next(
-                new Choice(this, 'Video details fetched?')
-                    .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onDetailsError)
-                    .when(
-                        Condition.or(
-                            Condition.stringEquals(`$.${VIDEO_TYPE_KEY}`, 'VIDEO' as YoutubeVideoType),
-                            Condition.stringEquals(`$.${VIDEO_TYPE_KEY}`, 'COMPLETED' as YoutubeVideoType)
-                        ),
-                        transcriptionFlow
-                    )
-                    .otherwise(onNotProcessed)
-                    .afterwards()
-            )
+        const transcriptionFlow = Chain.start(videoPythonTranscriptionStep).next(
+            new Choice(this, 'Python:Transcription available?')
+                .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), supadataFallbackFlow)
+                .otherwise(transcriptSummarizationStep)
+                .afterwards()
+        )
+
+        const chain = transcriptionFlow
             .next(
                 new Choice(this, 'Transcript summary available?')
                     .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onSummaryError)
