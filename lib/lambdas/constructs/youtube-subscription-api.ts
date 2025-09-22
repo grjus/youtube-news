@@ -80,6 +80,7 @@ export class YoutubeNewsApi extends Construct {
         })
         table.grantReadWriteData(youtubeNotificationsReceiverFunction)
         secret.grantRead(youtubeNotificationsReceiverFunction)
+        youtubeNotificationsQueue.grantSendMessages(youtubeNotificationsReceiverFunction)
 
         const youtubeNotificationsProcessorFunction = lambdaFactory(this, {
             id: 'YoutubeNotificationsProcessorFunction',
