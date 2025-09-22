@@ -61,17 +61,13 @@ export const toSubscribedChannelEntity = ({
     genre,
     isActive,
     now = Date.now(),
-    lastSubscribedAt = now,
-    nextRenewalAt = now + 30 * 24 * 60 * 60 * 1000,
-    leaseDays = 4
+    nextRenewalAt = now + 30 * 24 * 60 * 60 * 1000
 }: {
     channelId: string
     channelTitle: string
     genre: Exclude<VideoGenre, 'ALARM'>
     now: number
-    lastSubscribedAt: number
     nextRenewalAt: number
-    leaseDays: number
     isActive: boolean
 }): SubscribedChannelItem => ({
     pk: AcceptablePK.SUBSCRIBED_CHANNEL,
@@ -82,9 +78,7 @@ export const toSubscribedChannelEntity = ({
     isActive,
     createdAt: now,
     updatedAt: now,
-    lastSubscribedAt: lastSubscribedAt,
-    nextRenewalAt: nextRenewalAt,
-    leaseDays: leaseDays
+    nextRenewalAt: nextRenewalAt
 })
 
 export const toYoutubeVideo = (payload: YoutubeVideoItem): YoutubeVideo => ({
