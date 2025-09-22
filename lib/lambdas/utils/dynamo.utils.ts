@@ -4,11 +4,9 @@ import {
     GetItemCommandInput,
     PutItemCommand,
     QueryCommand,
-    QueryCommandInput,
-    UpdateItemCommand,
-    UpdateItemCommandInput
+    QueryCommandInput
 } from '@aws-sdk/client-dynamodb'
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
+import { marshall, NativeAttributeValue, unmarshall } from '@aws-sdk/util-dynamodb'
 import { AcceptablePK, MainTable, PROCESSING_MODE_INDEX } from '../../consts'
 import {
     MainItem,
@@ -17,6 +15,7 @@ import {
     VideoGenre,
     YoutubeNotificationItem
 } from '../../main.types'
+import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
 export const putItem = async <T extends MainItem>(
     item: T,
@@ -98,45 +97,46 @@ export const updateSubscriptionChannel = async (
     }
 
     const now = Date.now()
+    const docClient = DynamoDBDocumentClient.from(dynamoClient)
 
-    const expressionParts: string[] = []
-    const attrNames: Record<string, string> = {}
-    const attrValues: Record<string, unknown> = {}
+    const updates: Partial<SubscribedChannelItem> = {
+        ...payload,
+        updatedAt: now
+    }
+
+    const setExpressions: string[] = []
+    const attributeNames: Record<string, string> = { '#pk': MainTable.PK, '#sk': MainTable.SK }
+    const attributeValues: Record<string, NativeAttributeValue> = {}
 
     let idx = 0
-    for (const [key, value] of Object.entries(payload)) {
-        idx++
-        const nameKey = `#n${idx}`
-        const valueKey = `:v${idx}`
-        expressionParts.push(`${nameKey} = ${valueKey}`)
-        attrNames[nameKey] = key
-        attrValues[valueKey] = value
+    for (const [key, value] of Object.entries(updates)) {
+        idx += 1
+        const nameToken = `#n${idx}`
+        const valueToken = `:v${idx}`
+        attributeNames[nameToken] = key
+        attributeValues[valueToken] = value as NativeAttributeValue
+        setExpressions.push(`${nameToken} = ${valueToken}`)
     }
 
-    idx++
-    const updatedAtName = `#n${idx}`
-    const updatedAtValue = `:v${idx}`
-    expressionParts.push(`${updatedAtName} = ${updatedAtValue}`)
-    attrNames[updatedAtName] = 'updatedAt'
-    attrValues[updatedAtValue] = now
-
-    const params: UpdateItemCommandInput = {
+    const command = new UpdateCommand({
         TableName: tableName,
-        Key: marshall({
+        Key: {
             [MainTable.PK]: AcceptablePK.SUBSCRIBED_CHANNEL,
             [MainTable.SK]: channelId
-        }),
-        ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)',
-        UpdateExpression: `SET ${expressionParts.join(', ')}`,
-        ExpressionAttributeNames: attrNames,
-        ExpressionAttributeValues: marshall(attrValues),
+        },
+        ConditionExpression: 'attribute_exists(#pk) AND attribute_exists(#sk)',
+        UpdateExpression: `SET ${setExpressions.join(', ')}`,
+        ExpressionAttributeNames: attributeNames,
+        ExpressionAttributeValues: attributeValues,
         ReturnValues: 'ALL_NEW'
+    })
+
+    const { Attributes } = await docClient.send(command)
+    if (!Attributes) {
+        return null
     }
 
-    const res = await dynamoClient.send(new UpdateItemCommand(params))
-    if (!res.Attributes) return null
-
-    return unmarshall(res.Attributes) as SubscribedChannelItem
+    return Attributes as unknown as SubscribedChannelItem
 }
 
 export const getChannelsForSubscriptionRenewal = async (
@@ -149,9 +149,10 @@ export const getChannelsForSubscriptionRenewal = async (
         KeyConditionExpression: 'pk = :pk',
         ExpressionAttributeValues: {
             ':pk': { S: AcceptablePK.SUBSCRIBED_CHANNEL },
-            ':now': { N: now.toString() }
+            ':now': { N: now.toString() },
+            ':true': { BOOL: true }
         },
-        FilterExpression: 'nextRenewalAt <= :now'
+        FilterExpression: 'nextRenewalAt <= :now AND isActive = :true'
     }
 
     const command = new QueryCommand(params)

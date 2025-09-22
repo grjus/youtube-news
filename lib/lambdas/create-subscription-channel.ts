@@ -28,8 +28,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const subscriptionChannelEntity = toSubscribedChannelEntity({
             ...payload,
             now,
-            lastSubscribedAt: now,
-            leaseDays: 4,
             nextRenewalAt: now,
             isActive: true
         })
