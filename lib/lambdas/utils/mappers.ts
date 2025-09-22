@@ -7,13 +7,14 @@ import {
     VideoSummary,
     VideoSummaryItem,
     YoutubeNotification,
-    YoutubeNotificationItem,
     YoutubeVideo,
     YoutubeVideoItem
 } from '../../main.types'
 import { AcceptablePK, MessageType, VIDEO_TYPE_KEY } from '../../consts'
 
-export const toYoutubeNotification = async (xmlPayload: string): Promise<null | YoutubeNotification> => {
+export const toYoutubeNotification = async (
+    xmlPayload: string
+): Promise<null | Omit<YoutubeNotification, 'genre' | 'caption' | typeof VIDEO_TYPE_KEY>> => {
     try {
         const parsedXml = await parseStringPromise(xmlPayload)
         console.log('Parsed XML:', JSON.stringify(parsedXml, null, 2))
@@ -27,11 +28,11 @@ export const toYoutubeNotification = async (xmlPayload: string): Promise<null | 
             videoId,
             channelId: entry['yt:channelId'][0],
             videoTitle: entry['title'][0],
-            channelTitle: entry['author'][0]['name'][0],
-            channelUri: entry['author'][0]['uri'][0],
+            channelTitle: 'n/a',
+            channelUri: 'n/a',
             publishedAt,
             processingMode: 'IMMEDIATE'
-        } satisfies YoutubeNotification
+        } satisfies Omit<YoutubeNotification, 'genre' | 'caption' | typeof VIDEO_TYPE_KEY>
     } catch (error) {
         console.error('Failed to parse XML payload', error)
         return null
@@ -86,21 +87,6 @@ export const toSubscribedChannelEntity = ({
     leaseDays: leaseDays
 })
 
-export const toYoutubeNotificationEntity = (payload: YoutubeNotification, now: number): YoutubeNotificationItem => ({
-    pk: `${AcceptablePK.YOUTUBE_NOTIFICATION}/${payload.channelId}`,
-    sk: payload.channelId,
-    timestamp: now,
-    videoId: payload.videoId,
-    channelId: payload.channelId,
-    videoTitle: payload.videoTitle,
-    channelTitle: payload.channelTitle,
-    channelUri: payload.channelUri,
-    publishedAt: payload.publishedAt,
-    createdAt: now,
-    updatedAt: now,
-    processingMode: payload.processingMode
-})
-
 export const toYoutubeVideo = (payload: YoutubeVideoItem): YoutubeVideo => ({
     videoId: payload.videoId,
     channelId: payload.channelId,
@@ -114,7 +100,9 @@ export const toYoutubeVideo = (payload: YoutubeVideoItem): YoutubeVideo => ({
     updatedAt: payload.updatedAt,
     type: MessageType.YOUTUBE_VIDEO,
     id: payload.sk,
-    sendAt: payload.createdAt
+    sendAt: payload.createdAt,
+    caption: payload.caption,
+    processingMode: payload.processingMode
 })
 
 export const toVideoSummary = <T>(payload: VideoSummaryItem<T>): VideoSummary<T> => ({
