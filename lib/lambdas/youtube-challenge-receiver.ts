@@ -4,10 +4,16 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
 const tableName = process.env.TABLE_NAME!
 const dynamoClient = new DynamoDBClient()
+const safetyMarginSeconds = 12 * 60 * 60
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> => {
+    const now = Date.now()
     const challenge = event.queryStringParameters?.['hub.challenge']
     const topic = event.queryStringParameters?.['hub.topic']
+    const leaseSeconds = event.queryStringParameters?.['hub.lease_seconds']
+    const nextRenewalAt = leaseSeconds
+        ? now + (parseInt(leaseSeconds) - safetyMarginSeconds) * 1000
+        : now + 60 * 60 * 24 * 4 * 1000
 
     if (challenge && topic) {
         const url = new URL(topic)
@@ -17,9 +23,10 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         }
         console.log(`Received verification request. Responding with challenge: ${challenge}`)
         await updateSubscriptionChannel(channelId, tableName, dynamoClient, {
-            isActive: true
+            isActive: true,
+            nextRenewalAt
         })
-        console.log(`Channel ${channelId} marked as active`)
+        console.log(`Subscription for channelId ${channelId} is active until ${new Date(nextRenewalAt)}`)
         return {
             statusCode: 200,
             body: challenge

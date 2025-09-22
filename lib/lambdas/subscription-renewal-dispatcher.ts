@@ -16,7 +16,7 @@ export const handler = async () => {
         await sqs.send(
             new SendMessageCommand({
                 QueueUrl: queueUrl,
-                MessageBody: JSON.stringify({ channelId: ch[MainTable.SK], leaseDays: ch.leaseDays })
+                MessageBody: JSON.stringify({ channelId: ch[MainTable.SK] })
             })
         )
     }
