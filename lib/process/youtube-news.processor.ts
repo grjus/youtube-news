@@ -83,7 +83,7 @@ export class YoutubeVideoProcessorFlow extends Construct {
             outputPath: '$.Payload'
         })
 
-        const { onSummaryError, onTranscriptError, onChatError, success } =
+        const { onSummaryError, onDetailsError, onNotProcessed, onTranscriptError, onChatError, success } =
             new YoutubeAlarms(this, 'YoutubeAlarms', {
                 alarmTopic
             })
@@ -102,7 +102,13 @@ export class YoutubeVideoProcessorFlow extends Construct {
                 .afterwards()
         )
 
-        const chain = transcriptionFlow
+        const videoReadyChoice = new Choice(this, 'Video ready for processing?')
+            .when(Condition.not(Condition.isPresent('$.videoType')), onDetailsError)
+            .when(Condition.stringEquals('$.processingMode', 'SCHEDULED'), onNotProcessed)
+            .otherwise(transcriptionFlow)
+            .afterwards()
+
+        const chain = videoReadyChoice
             .next(
                 new Choice(this, 'Transcript summary available?')
                     .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onSummaryError)

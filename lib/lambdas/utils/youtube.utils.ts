@@ -50,23 +50,38 @@ export const checkVideoCaptions = async (videoId: string, youtubeApiKey: string)
 
 export const checkVideoDetails = async (
     videoId: string,
+    channelId: string,
     youtubeApiKey: string
 ): Promise<{
     type: YoutubeVideoType
     caption: YoutubeCaptionType
+    details: { channelTitle: string; channelUri: string }
 }> => {
-    const [caption, type] = await Promise.all([
+    const [caption, type, details] = await Promise.all([
         checkVideoCaptions(videoId, youtubeApiKey),
-        checkVideoType(videoId, youtubeApiKey)
+        checkVideoType(videoId, youtubeApiKey),
+        checkChannelDetails(channelId, youtubeApiKey)
     ])
 
-    return { type, caption }
+    return { type, caption, details }
 }
 
-export const checkIfChannelExists = async (
-    channelId: string,
-    youtubeApiKey: string
-): Promise<boolean> => {
+const checkChannelDetails = async (channelId: string, youtubeApiKey: string) => {
+    const { data } = await get(YOUTUBE_API_CHANNELS_URL, {
+        params: { id: channelId, key: youtubeApiKey, part: 'snippet' }
+    })
+    const v = data.items?.[0]
+    if (!v) {
+        console.warn(`Channel with ID ${channelId} not found.`)
+        throw new Error('Channel not found')
+    }
+    return {
+        channelTitle: v.snippet.title,
+        channelUri: `https://www.youtube.com/channel/${channelId}`
+    }
+}
+
+export const checkIfChannelExists = async (channelId: string, youtubeApiKey: string): Promise<boolean> => {
     const { data } = await get(YOUTUBE_API_CHANNELS_URL, {
         params: { id: channelId, key: youtubeApiKey, part: 'id' }
     })

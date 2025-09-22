@@ -31,7 +31,11 @@ export const handler = async (event: SQSEvent) => {
             continue
         }
         console.log(`Received notification for videoId: ${baseNotification.videoId}`)
-        const { type, caption } = await checkVideoDetails(baseNotification.videoId, secret.YOUTUBE_API_KEY)
+        const { type, caption, details } = await checkVideoDetails(
+            baseNotification.videoId,
+            baseNotification.channelId,
+            secret.YOUTUBE_API_KEY
+        )
         const processingMode: YoutubeNotificationProcessingMode =
             type === 'LIVE' || type === 'UPCOMING' ? 'SCHEDULED' : 'IMMEDIATE'
 
@@ -50,6 +54,8 @@ export const handler = async (event: SQSEvent) => {
 
         const youtubeNotification = {
             ...baseNotification,
+            channelTitle: details.channelTitle,
+            channelUri: details.channelUri,
             genre: channelDetails.genre,
             caption,
             processingMode,

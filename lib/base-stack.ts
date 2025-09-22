@@ -47,12 +47,14 @@ export class BaseStack extends Stack {
         })
 
         const deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-            retentionPeriod: cdk.Duration.days(14)
+            retentionPeriod: cdk.Duration.days(14),
+            visibilityTimeout: cdk.Duration.seconds(300)
         })
 
         const youtubeNotificationsQueue = new Queue(this, 'YoutubeNotificationsQueue', {
             deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 10 },
-            retentionPeriod: cdk.Duration.days(14)
+            retentionPeriod: cdk.Duration.days(14),
+            visibilityTimeout: cdk.Duration.seconds(300)
         })
 
         const subscriptionRenewalQueue = new Queue(this, 'SubscriptionRenewalQueue', {

@@ -28,8 +28,8 @@ export const toYoutubeNotification = async (
             videoId,
             channelId: entry['yt:channelId'][0],
             videoTitle: entry['title'][0],
-            channelTitle: entry['author'][0]['name'][0],
-            channelUri: entry['author'][0]['uri'][0],
+            channelTitle: 'n/a',
+            channelUri: 'n/a',
             publishedAt,
             processingMode: 'IMMEDIATE'
         } satisfies Omit<YoutubeNotification, 'genre' | 'caption' | typeof VIDEO_TYPE_KEY>
