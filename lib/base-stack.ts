@@ -3,7 +3,7 @@ import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { EnvConfig } from './env.types'
 import { Topic } from 'aws-cdk-lib/aws-sns'
-import { PROCESSING_MODE_INDEX, awsSdkModuleName, MainTable, STATE_MACHINE_ARN_ATTR } from './consts'
+import { awsSdkModuleName, MainTable, PROCESSING_MODE_INDEX, STATE_MACHINE_ARN_ATTR } from './consts'
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { StringParameter } from 'aws-cdk-lib/aws-ssm'
@@ -47,7 +47,14 @@ export class BaseStack extends Stack {
         })
 
         const deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-            retentionPeriod: cdk.Duration.days(14)
+            retentionPeriod: cdk.Duration.days(14),
+            visibilityTimeout: cdk.Duration.seconds(300)
+        })
+
+        const youtubeNotificationsQueue = new Queue(this, 'YoutubeNotificationsQueue', {
+            deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 10 },
+            retentionPeriod: cdk.Duration.days(14),
+            visibilityTimeout: cdk.Duration.seconds(300)
         })
 
         const subscriptionRenewalQueue = new Queue(this, 'SubscriptionRenewalQueue', {
@@ -148,7 +155,7 @@ export class BaseStack extends Stack {
             description: 'Run every full hour'
         })
 
-        const { youtubeNotificationsReceiverFunction, youtubePubSubUrl } = new YoutubeNewsApi(this, 'YoutubeNewsApi', {
+        const { youtubeNotificationsProcessorFunction, youtubePubSubUrl } = new YoutubeNewsApi(this, 'YoutubeNewsApi', {
             domainPrefix: 'youtube-news-api',
             removalPolicy: removalPolicy,
             table: mainTable,
@@ -158,7 +165,8 @@ export class BaseStack extends Stack {
                 layer: axiosLayer,
                 moduleName: axiosClientLayerParams.moduleName
             },
-            deadLetterQueue
+            deadLetterQueue,
+            youtubeNotificationsQueue
         })
         const { subscriptionRenewalDispatcher } = new YoutubePubSub(this, 'YoutubePubSub', {
             subscriptionRenewalQueue,
@@ -173,8 +181,8 @@ export class BaseStack extends Stack {
             }
         })
 
-        youtubeNotificationsReceiverFunction.addEnvironment(STATE_MACHINE_ARN_ATTR, stateMachine.stateMachineArn)
-        stateMachine.grantStartExecution(youtubeNotificationsReceiverFunction)
+        youtubeNotificationsProcessorFunction.addEnvironment(STATE_MACHINE_ARN_ATTR, stateMachine.stateMachineArn)
+        stateMachine.grantStartExecution(youtubeNotificationsProcessorFunction)
 
         const scheduledNotificationPoller = lambdaFactory(this, {
             id: 'ScheduledNotificationPollerFunction',
@@ -215,6 +223,11 @@ export class BaseStack extends Stack {
         new CfnOutput(this, 'AxiosLayerArnOutput', {
             value: axiosLayerArn,
             description: 'ARN of the Axios client layer'
+        })
+
+        new CfnOutput(this, 'YoutubeNotificationsQueueUrl', {
+            value: youtubeNotificationsQueue.queueUrl,
+            description: 'URL of the SQS queue for YouTube notifications'
         })
     }
 }

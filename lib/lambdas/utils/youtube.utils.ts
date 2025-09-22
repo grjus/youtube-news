@@ -1,10 +1,12 @@
-import { YoutubeVideoType } from '../../main.types'
+import { YoutubeCaptionType, YoutubeVideoType } from '../../main.types'
 import { get, post } from 'axios-client'
 
-const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/videos'
+const YOUTUBE_API_VIDEO_URL = 'https://www.googleapis.com/youtube/v3/videos'
+const YOUTUBE_API_CAPTIONS_URL = 'https://www.googleapis.com/youtube/v3/captions'
+const YOUTUBE_API_CHANNELS_URL = 'https://www.googleapis.com/youtube/v3/channels'
 
 export const checkVideoType = async (videoId: string, youtubeApiKey: string): Promise<YoutubeVideoType> => {
-    const { data } = await get(YOUTUBE_API_URL, {
+    const { data } = await get(YOUTUBE_API_VIDEO_URL, {
         params: { id: videoId, key: youtubeApiKey, part: 'snippet,contentDetails,liveStreamingDetails' }
     })
 
@@ -23,7 +25,7 @@ export const checkVideoType = async (videoId: string, youtubeApiKey: string): Pr
         if (seconds <= 180) {
             return 'SHORT'
         }
-        if (seconds > 7200) {
+        if (seconds > 60 * 60 * 3) {
             return 'LONG'
         }
 
@@ -34,15 +36,58 @@ export const checkVideoType = async (videoId: string, youtubeApiKey: string): Pr
     return 'UNKNOWN'
 }
 
-const checkIfChannelExists = async (channelId: string, youtubeApiKey: string): Promise<boolean> => {
-    const { data } = await get('https://www.googleapis.com/youtube/v3/channels', {
+export const checkVideoCaptions = async (videoId: string, youtubeApiKey: string): Promise<YoutubeCaptionType> => {
+    const { data } = await get(YOUTUBE_API_CAPTIONS_URL, {
+        params: { videoId: videoId, key: youtubeApiKey, part: 'id,snippet' }
+    })
+    const v = data.items?.[0]
+    if (!v) {
+        console.warn(`Captions for video ${videoId} not found.`)
+        return 'NONE'
+    }
+    return v.snippet.trackKind === 'ASR' ? 'AUTO_GENERATED' : 'USER_GENERATED'
+}
+
+export const checkVideoDetails = async (
+    videoId: string,
+    channelId: string,
+    youtubeApiKey: string
+): Promise<{
+    type: YoutubeVideoType
+    caption: YoutubeCaptionType
+    details: { channelTitle: string; channelUri: string }
+}> => {
+    const [caption, type, details] = await Promise.all([
+        checkVideoCaptions(videoId, youtubeApiKey),
+        checkVideoType(videoId, youtubeApiKey),
+        checkChannelDetails(channelId, youtubeApiKey)
+    ])
+
+    return { type, caption, details }
+}
+
+const checkChannelDetails = async (channelId: string, youtubeApiKey: string) => {
+    const { data } = await get(YOUTUBE_API_CHANNELS_URL, {
+        params: { id: channelId, key: youtubeApiKey, part: 'snippet' }
+    })
+    const v = data.items?.[0]
+    if (!v) {
+        console.warn(`Channel with ID ${channelId} not found.`)
+        throw new Error('Channel not found')
+    }
+    return {
+        channelTitle: v.snippet.title,
+        channelUri: `https://www.youtube.com/channel/${channelId}`
+    }
+}
+
+export const checkIfChannelExists = async (channelId: string, youtubeApiKey: string): Promise<boolean> => {
+    const { data } = await get(YOUTUBE_API_CHANNELS_URL, {
         params: { id: channelId, key: youtubeApiKey, part: 'id' }
     })
     console.log('Channel data:', data)
     return data.items?.length > 0
 }
-
-export { checkIfChannelExists }
 
 const iso8601ToSeconds = (iso: string): number => {
     const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso) || []
