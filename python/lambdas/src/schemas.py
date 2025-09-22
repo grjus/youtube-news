@@ -19,11 +19,16 @@ class TranscriptVideoEntity(BaseModel):
     transcript: str
 
 
+YoutubeCaption = Literal["AUTO_GENERATED", "USER_GENERATED", "NONE"]
+
+
 class YoutubeVideo(TypedDict):
-    type: Literal['YOUTUBE_VIDEO']
+    type: Literal["YOUTUBE_VIDEO"]
     id: str
-    videoType: Literal['SHORT', 'VIDEO', 'LIVE', 'UNKNOWN', 'UPCOMING', 'COMPLETED', 'LONG']
-    genre: Literal['TINFOIL', 'SOFTWARE_ENGINEERING', 'POLITICS']
+    videoType: Literal[
+        "SHORT", "VIDEO", "LIVE", "UNKNOWN", "UPCOMING", "COMPLETED", "LONG"
+    ]
+    genre: Literal["TINFOIL", "SOFTWARE_ENGINEERING", "POLITICS", "SCIENCE"]
     videoId: str
     channelId: str
     videoTitle: str
@@ -33,6 +38,7 @@ class YoutubeVideo(TypedDict):
     updatedAt: int
     createdAt: int
     sendAt: int
+    caption: YoutubeCaption
 
 
 class ErrorOutput(BaseModel):
