@@ -57,6 +57,14 @@ function serializeErr(err: unknown) {
 }
 
 export const handler = async (payload: YoutubeVideo, context?: Context) => {
+    if (payload.caption === 'NONE') {
+        console.log(`Video [${payload.videoTitle}] has no captions, skipping transcription.`)
+        return {
+            error: 'Video has no captions, skipping transcription.',
+            payload: { videoId: payload.videoId, channelTitle: payload.channelTitle, videoTitle: payload.videoTitle },
+            subject: `Transcription Provider, channel:[${payload.channelTitle}], video:[${payload.videoTitle}]`
+        } satisfies ErrorOutput
+    }
     try {
         const { channelId, videoId, channelUri, channelTitle, publishedAt, videoTitle, genre, videoType } = payload
 
@@ -67,7 +75,7 @@ export const handler = async (payload: YoutubeVideo, context?: Context) => {
         const startRes: TranscriptOrJobId = await supadata.transcript({
             url: `https://youtu.be/${videoId}`,
             text: true,
-            mode: payload.caption === 'AUTO_GENERATED' ? 'auto' : 'native'
+            mode: payload.caption === 'USER_GENERATED' ? 'native' : 'auto'
         })
 
         let transcript: Transcript | null | undefined = null
