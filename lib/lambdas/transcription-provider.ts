@@ -67,7 +67,7 @@ export const handler = async (payload: YoutubeVideo, context?: Context) => {
         const startRes: TranscriptOrJobId = await supadata.transcript({
             url: `https://youtu.be/${videoId}`,
             text: true,
-            mode: 'auto'
+            mode: payload.caption === 'AUTO_GENERATED' ? 'auto' : 'native'
         })
 
         let transcript: Transcript | null | undefined = null
