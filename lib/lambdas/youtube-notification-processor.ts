@@ -39,10 +39,12 @@ export const handler = async (event: SQSEvent) => {
         const processingMode: YoutubeNotificationProcessingMode =
             type === 'LIVE' || type === 'UPCOMING' ? 'SCHEDULED' : 'IMMEDIATE'
 
-        if (isOlderThan24Hours(baseNotification.publishedAt, now) && type !== 'UPCOMING') {
-            console.warn(`Video older than 24 hours: ${JSON.stringify(baseNotification)}`)
-            continue
-        }
+        // Temporarily disable the 24 hours check.
+
+        // if (isOlderThan24Hours(baseNotification.publishedAt, now) && type !== 'UPCOMING') {
+        //     console.warn(`Video older than 24 hours: ${JSON.stringify(baseNotification)}`)
+        //     continue
+        // }
 
         const { channelId, videoId } = baseNotification
 
