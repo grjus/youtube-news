@@ -120,10 +120,24 @@ export class YoutubeNewsApi extends Construct {
                 SECRET_NAME: secret.secretName
             },
             layers: [axiosLayerDef.layer],
-            externalModules: [axiosLayerDef.moduleName]
+            externalModules: [awsSdkModuleName, axiosLayerDef.moduleName]
         })
         table.grantReadWriteData(createSubscriptionChannelFunction)
         secret.grantRead(createSubscriptionChannelFunction)
+
+        const patchSubscriptionChannelFunction = lambdaFactory(this, {
+            id: 'PatchSubscriptionChannel',
+            removalPolicy,
+            retention,
+            entry: join('lib', 'lambdas', 'patch-subscription-channel.ts'),
+            handler: 'handler',
+            memorySize: 512,
+            environment: {
+                TABLE_NAME: table.tableName
+            },
+            externalModules: [awsSdkModuleName]
+        })
+        table.grantReadWriteData(patchSubscriptionChannelFunction)
 
         this.api = new RestApi(this, 'Api', {
             restApiName: 'YoutubeNewsApi',
@@ -176,8 +190,14 @@ export class YoutubeNewsApi extends Construct {
             validateRequestParameters: false
         })
 
-        const createSubscriptionChannelResource = this.api.root.addResource('channel')
-        createSubscriptionChannelResource.addMethod('POST', new LambdaIntegration(createSubscriptionChannelFunction), {
+        const subscriptionChannelResource = this.api.root.addResource('channel')
+        subscriptionChannelResource.addMethod('POST', new LambdaIntegration(createSubscriptionChannelFunction), {
+            requestModels: { 'application/json': requestModel },
+            requestValidator: validator,
+            apiKeyRequired: true
+        })
+
+        subscriptionChannelResource.addMethod('PATCH', new LambdaIntegration(patchSubscriptionChannelFunction), {
             requestModels: { 'application/json': requestModel },
             requestValidator: validator,
             apiKeyRequired: true

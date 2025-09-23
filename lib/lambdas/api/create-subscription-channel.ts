@@ -1,12 +1,12 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { toSubscribedChannelEntity } from './utils/mappers'
-import { SubscriptionVideoChannels } from '../env.types'
-import { putItem } from './utils/dynamo.utils'
-import { SubscribedChannelItem } from '../main.types'
-import { badRequestResponse, conflictResponse, createdResponse } from './utils/lambda.utils'
-import { checkIfChannelExists } from './utils/youtube.utils'
-import { getSecretValue } from './client/sm.client'
+import { toSubscribedChannelEntity } from '../utils/mappers'
+import { SubscriptionVideoChannel } from '../../env.types'
+import { putItem } from '../utils/dynamo.utils'
+import { SubscribedChannelItem } from '../../main.types'
+import { badRequestResponse, conflictResponse, createdResponse } from '../utils/lambda.utils'
+import { checkIfChannelExists } from '../utils/youtube.utils'
+import { getSecretValue } from '../client/sm.client'
 
 const dynamoClient = new DynamoDBClient()
 
@@ -14,9 +14,8 @@ const tableName = process.env.TABLE_NAME!
 const secretName = process.env.SECRET_NAME!
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
-    console.log('Lambda handler started', { event })
     try {
-        const payload = JSON.parse(event.body!) as SubscriptionVideoChannels
+        const payload = JSON.parse(event.body!) as SubscriptionVideoChannel
         console.log('Getting secret for channel check:', secretName)
         const secret = await getSecretValue(secretName)
         const channelExists = await checkIfChannelExists(payload.channelId, secret.YOUTUBE_API_KEY)

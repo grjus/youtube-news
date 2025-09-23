@@ -22,7 +22,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
             return { statusCode: 400, body: 'Bad Request: Missing channel_id' }
         }
         console.log(`Received verification request. Responding with challenge: ${challenge}`)
-        await updateSubscriptionChannel(channelId, tableName, dynamoClient, {
+        await updateSubscriptionChannel(channelId, tableName, dynamoClient, now, {
             isActive: true,
             nextRenewalAt
         })
