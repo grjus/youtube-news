@@ -42,8 +42,8 @@ export const checkVideoCaptions = async (videoId: string, youtubeApiKey: string)
     })
     const v = data.items?.[0]
     if (!v) {
-        console.warn(`Captions for video ${videoId} not found.`)
-        return 'NONE'
+        console.warn(`Captions for video ${videoId} not found. Defaulting to AUTO_GENERATED.`)
+        return 'AUTO_GENERATED'
     }
     return v.snippet.trackKind === 'ASR' ? 'AUTO_GENERATED' : 'USER_GENERATED'
 }
