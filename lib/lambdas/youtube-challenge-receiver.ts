@@ -13,11 +13,11 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     if (!queryParams) {
         return { statusCode: 400, body: 'Bad Request: Missing query parameters' }
     }
-    const { mode, challenge, leaseSeconds, channelId } = queryParams
+    const { mode, challenge, channelId } = queryParams
 
     if (mode === 'subscribe') {
-        const nextRenewalAt = leaseSeconds
-            ? now + (parseInt(leaseSeconds) - safetyMarginSeconds) * 1000
+        const nextRenewalAt = queryParams.leaseSeconds
+            ? now + (parseInt(queryParams.leaseSeconds) - safetyMarginSeconds) * 1000
             : now + 60 * 60 * 24 * 4 * 1000
 
         console.log(`Received [subscription] verification request. Responding with challenge: ${challenge}`)
@@ -51,7 +51,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
 type YoutubeSubscriptionChallengeParams = Readonly<{
     challenge: string
-    leaseSeconds: string
+    leaseSeconds?: string
     mode: string
     topic: string
     channelId: string
@@ -62,7 +62,6 @@ const parseYoutubeQueryParams = (
 ): YoutubeSubscriptionChallengeParams | null => {
     const response = {
         challenge: queryStringParameters?.['hub.challenge'],
-        leaseSeconds: queryStringParameters?.['hub.lease_seconds'],
         mode: queryStringParameters?.['hub.mode'],
         topic: queryStringParameters?.['hub.topic']
     }
@@ -75,8 +74,10 @@ const parseYoutubeQueryParams = (
     if (!channelId) {
         return null
     }
+    const leaseSeconds = queryStringParameters?.['hub.lease_seconds']
     return {
         ...response,
-        channelId
+        channelId,
+        leaseSeconds
     } as YoutubeSubscriptionChallengeParams
 }

@@ -36,15 +36,12 @@ export const handler = async (event: SQSEvent) => {
             baseNotification.channelId,
             secret.YOUTUBE_API_KEY
         )
+        if (type === 'SHORT' || type === 'LONG') {
+            console.log(`Skipping non-live video [${type}]: ${baseNotification.videoId}`)
+            continue
+        }
         const processingMode: YoutubeNotificationProcessingMode =
             type === 'LIVE' || type === 'UPCOMING' ? 'SCHEDULED' : 'IMMEDIATE'
-
-        // Temporarily disable the 24 hours check.
-
-        // if (isOlderThan24Hours(baseNotification.publishedAt, now) && type !== 'UPCOMING') {
-        //     console.warn(`Video older than 24 hours: ${JSON.stringify(baseNotification)}`)
-        //     continue
-        // }
 
         const { channelId, videoId } = baseNotification
 
@@ -89,11 +86,6 @@ export const handler = async (event: SQSEvent) => {
             console.log(`Notification stored for scheduled polling: channel=${channelId}, video=${videoId}`)
         }
     }
-}
-
-const isOlderThan24Hours = (publishedAt: number, now: number): boolean => {
-    const miliseconds24Hours = 24 * 60 * 60 * 1000
-    return now - publishedAt > miliseconds24Hours
 }
 
 const saveYoutubeVideoItem = async (notification: YoutubeNotification, now: number) => {
