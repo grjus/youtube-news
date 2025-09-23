@@ -14,7 +14,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         return badRequestResponse('Missing channelId in path parameters')
     }
     try {
-        const channel = await getChannel(channelId, tableName, dynamoClient)
+        const channel = await getChannel(tableName, channelId, dynamoClient)
         if (!channel) {
             return badRequestResponse(`Channel not found: [${channelId}]`)
         }

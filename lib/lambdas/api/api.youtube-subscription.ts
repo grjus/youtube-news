@@ -151,7 +151,7 @@ export class YoutubeNewsApi extends Construct {
             },
             externalModules: [awsSdkModuleName]
         })
-        table.grantReadWriteData(patchSubscriptionChannelFunction)
+        table.grantReadData(getSubscriptionChannelFunction)
 
         this.api = new RestApi(this, 'Api', {
             restApiName: 'YoutubeNewsApi',
