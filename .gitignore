@@ -9,6 +9,7 @@ node_modules
 .cdk.staging
 cdk.out
 int/outputs.json
+__pycache__
 
 # Idea
 .idea
