@@ -50,7 +50,11 @@ export const handler = async (event: SQSEvent) => {
 
         const channelDetails = await getChannel(tableName, channelId, dynamoClient)
         if (!channelDetails) {
-            console.error(`No active subscription for channelId: ${channelId}`)
+            console.warn(`Channel [${channelId}] is not registered. Skipping video [${videoId}]`)
+            continue
+        }
+        if (!channelDetails.isActive) {
+            console.warn(`No active subscription for channel [${channelId}], Skipping video [${videoId}]`)
             continue
         }
 

@@ -147,20 +147,20 @@ export const getChannelsForSubscriptionRenewal = async (
     const params: QueryCommandInput = {
         TableName: tableName,
         KeyConditionExpression: 'pk = :pk',
+        ExpressionAttributeNames: {
+            '#nra': 'nextRenewalAt'
+        },
         ExpressionAttributeValues: {
             ':pk': { S: AcceptablePK.SUBSCRIBED_CHANNEL },
             ':now': { N: now.toString() }
         },
-        FilterExpression: 'nextRenewalAt <= :now'
+        FilterExpression: 'attribute_exists(#nra) AND #nra <= :now'
     }
 
     const command = new QueryCommand(params)
     const { Items } = await dynamoClient.send(command)
 
-    if (!Items) {
-        return []
-    }
-
+    if (!Items) return []
     return Items.map((item) => unmarshall(item) as SubscribedChannelItem)
 }
 

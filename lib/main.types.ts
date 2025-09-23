@@ -100,7 +100,7 @@ export interface SubscribedChannelItem extends MainItem {
     [MainTable.TIMESTAMP]: number
     channelTitle: string
     [VIDEO_GENRE_KEY]: Exclude<VideoGenre, 'ALARM'>
-    nextRenewalAt: number
+    nextRenewalAt: number | null
     isActive: boolean
 }
 

@@ -19,7 +19,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         await updateSubscriptionChannel(channelId, tableName, dynamoClient, now, {
             isActive: payload.isActive,
             channelTitle: payload.channelTitle,
-            genre: payload.genre
+            genre: payload.genre,
+            nextRenewalAt: now
         })
     } catch (error) {
         if ((error as { name?: string }).name === 'ConditionalCheckFailedException') {
