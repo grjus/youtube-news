@@ -1,14 +1,13 @@
 import { parseStringPromise } from 'xml2js'
 import {
+    SubscribedChannel,
     SubscribedChannelItem,
     TranscriptVideo,
     TranscriptVideoItem,
     VideoGenre,
     VideoSummary,
     VideoSummaryItem,
-    YoutubeNotification,
-    YoutubeVideo,
-    YoutubeVideoItem
+    YoutubeNotification
 } from '../../main.types'
 import { AcceptablePK, MessageType, VIDEO_TYPE_KEY } from '../../consts'
 
@@ -81,24 +80,6 @@ export const toSubscribedChannelEntity = ({
     nextRenewalAt: nextRenewalAt
 })
 
-export const toYoutubeVideo = (payload: YoutubeVideoItem): YoutubeVideo => ({
-    videoId: payload.videoId,
-    channelId: payload.channelId,
-    videoTitle: payload.videoTitle,
-    channelTitle: payload.channelTitle,
-    channelUri: payload.channelUri,
-    publishedAt: payload.publishedAt,
-    videoType: payload[VIDEO_TYPE_KEY],
-    genre: payload.genre,
-    createdAt: payload.createdAt,
-    updatedAt: payload.updatedAt,
-    type: MessageType.YOUTUBE_VIDEO,
-    id: payload.sk,
-    sendAt: payload.createdAt,
-    caption: payload.caption,
-    processingMode: payload.processingMode
-})
-
 export const toVideoSummary = <T>(payload: VideoSummaryItem<T>): VideoSummary<T> => ({
     type: MessageType.SUMMARY,
     id: payload['sk'],
@@ -111,4 +92,12 @@ export const toVideoSummary = <T>(payload: VideoSummaryItem<T>): VideoSummary<T>
     summary: payload.summary,
     createdAt: payload.createdAt,
     sendAt: payload.createdAt
+})
+
+export const toSubscribedChannelDto = (payload: SubscribedChannelItem): SubscribedChannel => ({
+    channelId: payload.sk,
+    channelTitle: payload.channelTitle,
+    genre: payload.genre,
+    isActive: payload.isActive,
+    nextSubscriptionRenewalAt: payload.nextRenewalAt ? new Date(payload.nextRenewalAt).toISOString() : null
 })
