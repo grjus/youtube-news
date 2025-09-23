@@ -220,3 +220,11 @@ export type YoutubeVideo = Readonly<{
     caption: YoutubeCaptionType
 }> &
     Message
+
+export type SubscribedChannel = Readonly<{
+    channelId: string
+    channelTitle: string
+    [VIDEO_GENRE_KEY]: Exclude<VideoGenre, 'ALARM'>
+    nextSubscriptionRenewalAt: string | null
+    isActive: boolean
+}>

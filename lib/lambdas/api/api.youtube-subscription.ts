@@ -139,6 +139,20 @@ export class YoutubeNewsApi extends Construct {
         })
         table.grantReadWriteData(patchSubscriptionChannelFunction)
 
+        const getSubscriptionChannelFunction = lambdaFactory(this, {
+            id: 'GetSubscriptionChannel',
+            removalPolicy,
+            retention,
+            entry: join('lib', 'lambdas', 'api', 'get-subscription-channel.ts'),
+            handler: 'handler',
+            memorySize: 512,
+            environment: {
+                TABLE_NAME: table.tableName
+            },
+            externalModules: [awsSdkModuleName]
+        })
+        table.grantReadWriteData(patchSubscriptionChannelFunction)
+
         this.api = new RestApi(this, 'Api', {
             restApiName: 'YoutubeNewsApi',
             deployOptions: { stageName: 'prod' }
@@ -190,17 +204,23 @@ export class YoutubeNewsApi extends Construct {
             validateRequestParameters: false
         })
 
-        const subscriptionChannelResource = this.api.root.addResource('channel')
-        subscriptionChannelResource.addMethod('POST', new LambdaIntegration(createSubscriptionChannelFunction), {
+        const subscriptionChannelsResource = this.api.root.addResource('channels')
+        subscriptionChannelsResource.addMethod('POST', new LambdaIntegration(createSubscriptionChannelFunction), {
             requestModels: { 'application/json': requestModel },
             requestValidator: validator,
             apiKeyRequired: true
         })
 
-        subscriptionChannelResource.addMethod('PATCH', new LambdaIntegration(patchSubscriptionChannelFunction), {
+        subscriptionChannelsResource.addMethod('PATCH', new LambdaIntegration(patchSubscriptionChannelFunction), {
             requestModels: { 'application/json': requestModel },
             requestValidator: validator,
             apiKeyRequired: true
+        })
+
+        const subscriptionChannelResource = subscriptionChannelsResource.addResource('{channelId}')
+        subscriptionChannelResource.addMethod('GET', new LambdaIntegration(getSubscriptionChannelFunction), {
+            apiKeyRequired: true,
+            authorizationType: AuthorizationType.NONE
         })
 
         new CfnOutput(this, 'ApiUrl', { value: this.api.url })
