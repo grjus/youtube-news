@@ -94,10 +94,14 @@ export const toVideoSummary = <T>(payload: VideoSummaryItem<T>): VideoSummary<T>
     sendAt: payload.createdAt
 })
 
-export const toSubscribedChannelDto = (payload: SubscribedChannelItem): SubscribedChannel => ({
+export const toSubscribedChannelDto = (
+    payload: SubscribedChannelItem,
+    isAvailableOnYoutube: boolean
+): SubscribedChannel => ({
     channelId: payload.sk,
     channelTitle: payload.channelTitle,
     genre: payload.genre,
     isActive: payload.isActive,
-    nextSubscriptionRenewalAt: payload.nextRenewalAt ? new Date(payload.nextRenewalAt).toISOString() : null
+    nextSubscriptionRenewalAt: payload.nextRenewalAt ? new Date(payload.nextRenewalAt).toISOString() : null,
+    isAvailableOnYoutube
 })
