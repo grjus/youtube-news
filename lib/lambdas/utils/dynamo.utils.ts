@@ -89,6 +89,7 @@ export const updateSubscriptionChannel = async (
     channelId: string,
     tableName: string,
     dynamoClient: DynamoDBClient,
+    now: number,
     payload: Partial<SubscribedChannelItem>
 ): Promise<SubscribedChannelItem | null> => {
     if (!channelId) throw new Error('channelId is required')
@@ -96,7 +97,6 @@ export const updateSubscriptionChannel = async (
         throw new Error('payload must contain at least one property')
     }
 
-    const now = Date.now()
     const docClient = DynamoDBDocumentClient.from(dynamoClient)
 
     const updates: Partial<SubscribedChannelItem> = {
@@ -149,10 +149,9 @@ export const getChannelsForSubscriptionRenewal = async (
         KeyConditionExpression: 'pk = :pk',
         ExpressionAttributeValues: {
             ':pk': { S: AcceptablePK.SUBSCRIBED_CHANNEL },
-            ':now': { N: now.toString() },
-            ':true': { BOOL: true }
+            ':now': { N: now.toString() }
         },
-        FilterExpression: 'nextRenewalAt <= :now AND isActive = :true'
+        FilterExpression: 'nextRenewalAt <= :now'
     }
 
     const command = new QueryCommand(params)

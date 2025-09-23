@@ -45,7 +45,7 @@ export const checkVideoCaptions = async (videoId: string, youtubeApiKey: string)
         console.warn(`Captions for video ${videoId} not found. Defaulting to AUTO_GENERATED.`)
         return 'AUTO_GENERATED'
     }
-    return v.snippet.trackKind === 'ASR' ? 'AUTO_GENERATED' : 'USER_GENERATED'
+    return v.snippet.trackKind.toUpperCase() === 'ASR' ? 'AUTO_GENERATED' : 'USER_GENERATED'
 }
 
 export const checkVideoDetails = async (
@@ -108,6 +108,21 @@ export const subscribeOnce = async (channelId: string, apiUrl: string, secret: s
     const resp = await post(hubUrl, params)
     if (resp.status !== 202 && resp.status !== 204) {
         throw new Error(`Subscribe failed: ${channelId} -> ${resp.status} ${resp.statusText}`)
+    }
+    return true
+}
+
+export const unsubscribeOnce = async (channelId: string, apiUrl: string, secret: string): Promise<boolean> => {
+    const params = new URLSearchParams()
+    const hubUrl = 'https://pubsubhubbub.appspot.com/subscribe'
+    params.append('hub.mode', 'unsubscribe')
+    params.append('hub.topic', `https://www.youtube.com/xml/feeds/videos.xml?channel_id=${channelId}`)
+    params.append('hub.callback', apiUrl)
+    params.append('hub.verify', 'async')
+    params.append('hub.secret', secret)
+    const resp = await post(hubUrl, params)
+    if (resp.status !== 202 && resp.status !== 204) {
+        throw new Error(`Unsubscribe failed: ${channelId} -> ${resp.status} ${resp.statusText}`)
     }
     return true
 }

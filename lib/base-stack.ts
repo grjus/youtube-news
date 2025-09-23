@@ -17,7 +17,7 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
-import { YoutubeNewsApi } from './lambdas/constructs/youtube-subscription-api'
+import { YoutubeNewsApi } from './lambdas/api/api.youtube-subscription'
 import { YoutubePubSub } from './lambdas/constructs/youtube-pubsub'
 import { lambdaFactory } from './lambdas/utils/lambda.utils'
 
