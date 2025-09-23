@@ -152,7 +152,7 @@ export class YoutubeNewsApi extends Construct {
             externalModules: [awsSdkModuleName]
         })
         table.grantReadData(getSubscriptionChannelFunction)
-
+        secret.grantRead(getSubscriptionChannelFunction)
         this.api = new RestApi(this, 'Api', {
             restApiName: 'YoutubeNewsApi',
             deployOptions: { stageName: 'prod' }

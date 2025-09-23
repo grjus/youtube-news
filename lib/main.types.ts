@@ -227,4 +227,5 @@ export type SubscribedChannel = Readonly<{
     [VIDEO_GENRE_KEY]: Exclude<VideoGenre, 'ALARM'>
     nextSubscriptionRenewalAt: string | null
     isActive: boolean
+    isAvailableOnYoutube: boolean
 }>
