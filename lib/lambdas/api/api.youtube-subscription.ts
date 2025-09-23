@@ -112,7 +112,7 @@ export class YoutubeNewsApi extends Construct {
             id: 'CreateSubscriptionChannel',
             removalPolicy,
             retention,
-            entry: join('lib', 'lambdas', 'create-subscription-channel.ts'),
+            entry: join('lib', 'lambdas', 'api', 'create-subscription-channel.ts'),
             handler: 'handler',
             memorySize: 512,
             environment: {
@@ -129,7 +129,7 @@ export class YoutubeNewsApi extends Construct {
             id: 'PatchSubscriptionChannel',
             removalPolicy,
             retention,
-            entry: join('lib', 'lambdas', 'patch-subscription-channel.ts'),
+            entry: join('lib', 'lambdas', 'api', 'patch-subscription-channel.ts'),
             handler: 'handler',
             memorySize: 512,
             environment: {
