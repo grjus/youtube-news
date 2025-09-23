@@ -146,10 +146,12 @@ export class YoutubeNewsApi extends Construct {
             entry: join('lib', 'lambdas', 'api', 'get-subscription-channel.ts'),
             handler: 'handler',
             memorySize: 512,
+            layers: [axiosLayerDef.layer],
             environment: {
-                TABLE_NAME: table.tableName
+                TABLE_NAME: table.tableName,
+                SECRET_NAME: secret.secretName
             },
-            externalModules: [awsSdkModuleName]
+            externalModules: [awsSdkModuleName, axiosLayerDef.moduleName]
         })
         table.grantReadData(getSubscriptionChannelFunction)
         secret.grantRead(getSubscriptionChannelFunction)
