@@ -62,11 +62,6 @@ export const handler = async (event: SQSEvent) => {
             [VIDEO_TYPE_KEY]: type
         } satisfies YoutubeNotification
 
-        if (caption === 'NONE') {
-            console.warn(`Video has no captions, skipping: ${videoId} for channelId: ${channelId}`)
-            continue
-        }
-
         try {
             await saveYoutubeVideoItem(youtubeNotification, now)
         } catch {
