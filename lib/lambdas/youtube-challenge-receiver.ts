@@ -8,6 +8,7 @@ const safetyMarginSeconds = 12 * 60 * 60
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> => {
     const now = Date.now()
+    console.log('Received event:', JSON.stringify(event, null, 2))
     const challenge = event.queryStringParameters?.['hub.challenge']
     const topic = event.queryStringParameters?.['hub.topic']
     const leaseSeconds = event.queryStringParameters?.['hub.lease_seconds']
