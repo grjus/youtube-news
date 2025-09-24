@@ -97,7 +97,7 @@ export class YoutubeContent extends Construct {
                 TABLE_NAME: table.tableName,
                 SECRET_NAME: secret.secretName
             },
-            timeout: Duration.seconds(60),
+            timeout: Duration.seconds(120),
             layers: [pythonLayer],
             description: 'Extracts auto generated transcripts from YouTube videos',
             logGroup: new LogGroup(this, 'PythonTranscriptionFuncLogGroup', {

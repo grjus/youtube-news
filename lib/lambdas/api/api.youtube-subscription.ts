@@ -8,6 +8,7 @@ import {
     RequestValidator,
     RestApi
 } from 'aws-cdk-lib/aws-apigateway'
+import * as cdk from 'aws-cdk-lib'
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib'
 import { ITable } from 'aws-cdk-lib/aws-dynamodb'
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager'
@@ -16,8 +17,10 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { awsSdkModuleName } from '../../consts'
 import { LayerDefinition, VideoGenre } from '../../main.types'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { IQueue } from 'aws-cdk-lib/aws-sqs'
+import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs'
+import { ITopic } from 'aws-cdk-lib/aws-sns'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
+import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions'
 
 export interface YoutubeApiProps {
     domainPrefix: string
@@ -27,7 +30,7 @@ export interface YoutubeApiProps {
     table: ITable
     secret: ISecret
     deadLetterQueue: IQueue
-    youtubeNotificationsQueue: IQueue
+    youtubeNotificationsTopic: ITopic
 }
 
 export class YoutubeNewsApi extends Construct {
@@ -45,10 +48,22 @@ export class YoutubeNewsApi extends Construct {
             retention,
             axiosLayerDef,
             deadLetterQueue,
-            youtubeNotificationsQueue
+            youtubeNotificationsTopic
         }: YoutubeApiProps
     ) {
         super(scope, id)
+
+        const youtubeNotificationsQueue = new Queue(this, 'YoutubeNotificationsQueue', {
+            deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 10 },
+            retentionPeriod: cdk.Duration.days(14),
+            deliveryDelay: cdk.Duration.minutes(10)
+        })
+
+        youtubeNotificationsTopic.addSubscription(
+            new SqsSubscription(youtubeNotificationsQueue, {
+                rawMessageDelivery: true
+            })
+        )
 
         const youtubeChallengeReceiverFunction = lambdaFactory(this, {
             id: 'YoutubeChallengeReceiverFunction',
@@ -72,7 +87,7 @@ export class YoutubeNewsApi extends Construct {
             entry: join('lib', 'lambdas', 'youtube-notifications-receiver.ts'),
             handler: 'handler',
             environment: {
-                YOUTUBE_NOTIFICATIONS_QUEUE: youtubeNotificationsQueue.queueUrl,
+                YOUTUBE_NOTIFICATIONS_TOPIC_ARN: youtubeNotificationsTopic.topicArn,
                 SECRET_NAME: secret.secretName
             },
             externalModules: [awsSdkModuleName],
@@ -80,7 +95,7 @@ export class YoutubeNewsApi extends Construct {
         })
         table.grantReadWriteData(youtubeNotificationsReceiverFunction)
         secret.grantRead(youtubeNotificationsReceiverFunction)
-        youtubeNotificationsQueue.grantSendMessages(youtubeNotificationsReceiverFunction)
+        youtubeNotificationsTopic.grantPublish(youtubeNotificationsReceiverFunction)
 
         const youtubeNotificationsProcessorFunction = lambdaFactory(this, {
             id: 'YoutubeNotificationsProcessorFunction',
@@ -104,7 +119,6 @@ export class YoutubeNewsApi extends Construct {
         youtubeNotificationsProcessorFunction.addEventSource(
             new SqsEventSource(youtubeNotificationsQueue, { batchSize: 5 })
         )
-        youtubeNotificationsQueue.grantConsumeMessages(youtubeNotificationsProcessorFunction)
 
         this.youtubeNotificationsProcessorFunction = youtubeNotificationsProcessorFunction
 
@@ -146,11 +160,11 @@ export class YoutubeNewsApi extends Construct {
             entry: join('lib', 'lambdas', 'api', 'get-subscription-channel.ts'),
             handler: 'handler',
             memorySize: 512,
-            layers: [axiosLayerDef.layer],
             environment: {
                 TABLE_NAME: table.tableName,
                 SECRET_NAME: secret.secretName
             },
+            layers: [axiosLayerDef.layer],
             externalModules: [awsSdkModuleName, axiosLayerDef.moduleName]
         })
         table.grantReadData(getSubscriptionChannelFunction)

@@ -1,13 +1,11 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda'
 import { getSecretValue } from './client/sm.client'
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs'
-
-const CAPTIONS_WAIT_TIME_MINUTES = 10
+import { PublishCommand, SNSClient } from '@aws-sdk/client-sns'
 
 const secretName = process.env.SECRET_NAME!
-const queueUrl = process.env.YOUTUBE_NOTIFICATIONS_QUEUE!
-const sqsClient = new SQSClient()
+const topicArn = process.env.YOUTUBE_NOTIFICATIONS_TOPIC_ARN!
+const snsClient = new SNSClient()
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> => {
     const secret = await getSecretValue(secretName)
@@ -32,13 +30,13 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
     console.log('Signature verified successfully.')
 
-    await sqsClient.send(
-        new SendMessageCommand({
-            QueueUrl: queueUrl,
-            MessageBody: event.body,
-            DelaySeconds: CAPTIONS_WAIT_TIME_MINUTES * 60
+    await snsClient.send(
+        new PublishCommand({
+            TopicArn: topicArn,
+            Message: event.body
         })
     )
+    console.log('Notification forwarded to SNS topic.')
 
     return { statusCode: 200, body: 'OK' }
 }
