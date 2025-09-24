@@ -46,15 +46,12 @@ export class BaseStack extends Stack {
             displayName: 'Alarm Topic'
         })
 
-        const deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-            retentionPeriod: cdk.Duration.days(14),
-            visibilityTimeout: cdk.Duration.seconds(300)
+        const youtubeNotificationsTopic = new Topic(this, 'VideoNotificationsTopic', {
+            displayName: 'Video Notifications Topic'
         })
 
-        const youtubeNotificationsQueue = new Queue(this, 'YoutubeNotificationsQueue', {
-            deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 10 },
-            retentionPeriod: cdk.Duration.days(14),
-            visibilityTimeout: cdk.Duration.seconds(300)
+        const deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
+            retentionPeriod: cdk.Duration.days(14)
         })
 
         const subscriptionRenewalQueue = new Queue(this, 'SubscriptionRenewalQueue', {
@@ -166,7 +163,7 @@ export class BaseStack extends Stack {
                 moduleName: axiosClientLayerParams.moduleName
             },
             deadLetterQueue,
-            youtubeNotificationsQueue
+            youtubeNotificationsTopic
         })
         const { subscriptionRenewalDispatcher } = new YoutubePubSub(this, 'YoutubePubSub', {
             subscriptionRenewalQueue,
@@ -225,8 +222,8 @@ export class BaseStack extends Stack {
             description: 'ARN of the Axios client layer'
         })
 
-        new CfnOutput(this, 'YoutubeNotificationsQueueUrl', {
-            value: youtubeNotificationsQueue.queueUrl,
+        new CfnOutput(this, 'YoutubeNotificationsTopicArn', {
+            value: youtubeNotificationsTopic.topicArn,
             description: 'URL of the SQS queue for YouTube notifications'
         })
     }
