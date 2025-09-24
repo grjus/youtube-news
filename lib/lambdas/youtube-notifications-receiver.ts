@@ -3,6 +3,8 @@ import { getSecretValue } from './client/sm.client'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs'
 
+const CAPTIONS_WAIT_TIME_MINUTES = 10
+
 const secretName = process.env.SECRET_NAME!
 const queueUrl = process.env.YOUTUBE_NOTIFICATIONS_QUEUE!
 const sqsClient = new SQSClient()
@@ -34,7 +36,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         new SendMessageCommand({
             QueueUrl: queueUrl,
             MessageBody: event.body,
-            DelaySeconds: 120
+            DelaySeconds: CAPTIONS_WAIT_TIME_MINUTES * 60
         })
     )
 
