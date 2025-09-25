@@ -11,12 +11,16 @@ const getVideoProcessingRoute = (
 ): YoutubeNotificationProcessingMode => {
     switch (videoType) {
         case 'LIVE':
+            console.log(`Live video, scheduling for later: ${youtubeVideoDetails.videoId}`)
             return 'SCHEDULED'
         case 'UPCOMING':
+            console.log(`Upcoming video, scheduling for later: ${youtubeVideoDetails.videoId}`)
             return 'SCHEDULED'
         case 'LONG':
+            console.log(`Skipping long video: ${youtubeVideoDetails.videoId}`)
             return 'SKIP'
         case 'SHORT':
+            console.log(`Skipping short video: ${youtubeVideoDetails.videoId}`)
             return 'SKIP'
         case 'STANDARD':
             if (youtubeVideoDetails.isMembersOnly || youtubeVideoDetails.privacyStatus === 'private') {
