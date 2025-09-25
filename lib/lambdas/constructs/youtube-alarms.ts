@@ -10,7 +10,6 @@ type YoutubeAlarmsProps = Readonly<{
 export class YoutubeAlarms extends Construct {
     readonly fail: Fail
     readonly success: Succeed
-    readonly onDetailsError: Chain
     readonly onTranscriptError: Chain
     readonly onSummaryError: Chain
     readonly onNotProcessed: Chain
@@ -21,12 +20,6 @@ export class YoutubeAlarms extends Construct {
 
         this.fail = new Fail(this, 'Error', { cause: 'Unexpected error', error: 'Processing Error' })
         this.success = new Succeed(this, 'Success', { comment: 'Success' })
-
-        this.onDetailsError = new SnsPublish(this, 'Alarm: Youtube Details', {
-            topic: alarmTopic,
-            subject: 'Error processing youtube details',
-            message: TaskInput.fromJsonPathAt('$')
-        }).next(this.fail)
 
         this.onTranscriptError = new SnsPublish(this, 'Alarm: Youtube Transcript', {
             topic: alarmTopic,
