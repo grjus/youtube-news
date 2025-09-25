@@ -6,13 +6,15 @@ const _testCreateYoutubeDetails = ({
     liveBroadcastContent = 'none',
     liveStreamingDetails,
     isMembersOnly = false,
-    privacyStatus = 'public'
+    privacyStatus = 'public',
+    publishedAt = new Date().toISOString()
 }: {
     duration?: string
     liveBroadcastContent?: 'none' | 'live' | 'upcoming'
     liveStreamingDetails?: YoutubeLiveStreamingDetails
     isMembersOnly?: boolean
     privacyStatus?: 'public' | 'private' | 'unlisted'
+    publishedAt?: string
 }) =>
     ({
         videoId: 'dQw4w9WgXcQ',
@@ -20,7 +22,7 @@ const _testCreateYoutubeDetails = ({
         channelTitle: 'RickAstleyVEVO',
         channelUri: 'https://www.youtube.com/channel/UCuAXFkgsw1L7xaCfnd5JJOw',
         videoTitle: 'Rick Astley - Never Gonna Give You Up (Video)',
-        publishedAt: '2009-10-25T06:57:33Z',
+        publishedAt: publishedAt,
         durationSeconds: iso8601ToSeconds(duration),
         isMembersOnly,
         privacyStatus,
