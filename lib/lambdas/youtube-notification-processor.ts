@@ -67,6 +67,14 @@ export const handler = async (event: SQSEvent) => {
             console.warn(`Video already processed, skipping: ${videoId} for channelId: ${channelId}`)
             continue
         }
+        if (routeVideo !== 'SKIP') {
+            try {
+                await saveYoutubeVideoItem(youtubeNotification, now)
+            } catch {
+                console.warn(`Video already processed, skipping: ${videoId} for channelId: ${channelId}`)
+                continue
+            }
+        }
 
         switch (routeVideo) {
             case 'IMMEDIATE':
