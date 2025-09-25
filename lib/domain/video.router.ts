@@ -23,7 +23,16 @@ const getVideoProcessingRoute = (
                 console.log(`Skipping members-only or private video: ${youtubeVideoDetails.videoId}`)
                 return 'SKIP'
             }
-            if (!youtubeVideoDetails.liveStreamingDetails) return 'IMMEDIATE'
+
+            if (!youtubeVideoDetails.liveStreamingDetails) {
+                if (isOlderThan24Hours(youtubeVideoDetails.publishedAt, now)) {
+                    console.log(
+                        `Video is older than 24 hours (${youtubeVideoDetails.publishedAt}). Marking as SKIP: ${youtubeVideoDetails.videoId}`
+                    )
+                    return 'SKIP'
+                }
+                return 'IMMEDIATE'
+            }
             if (youtubeVideoDetails.liveStreamingDetails.actualEndTime) {
                 const delayBetweenEndAndNow =
                     now - new Date(youtubeVideoDetails.liveStreamingDetails.actualEndTime).getTime()
@@ -81,6 +90,11 @@ const iso8601ToSeconds = (iso: string): number => {
     const min = parseInt(minutes || '0', 10)
     const s = parseInt(seconds || '0', 10)
     return ((d * 24 + h) * 60 + min) * 60 + s
+}
+
+const isOlderThan24Hours = (publishedAt: string, now: number): boolean => {
+    const publishedTime = new Date(publishedAt).getTime()
+    return now - publishedTime > 24 * 60 * 60 * 1000
 }
 
 export { getVideoProcessingRoute, checkVideoType, iso8601ToSeconds }
