@@ -4,19 +4,23 @@ import { assertNever } from '../lambdas/utils/lambda.utils'
 const SHORT_VIDEO_MAX_DURATION_SECONDS = 180
 const LONG_VIDEO_MIN_DURATION_SECONDS = 60 * 60 * 3
 
-const getVideoProcessingRoute = (
+const getVideoProcessingMode = (
     youtubeVideoDetails: YoutubeVideoDetails,
     videoType: YoutubeVideoType,
     now: number
 ): YoutubeNotificationProcessingMode => {
     switch (videoType) {
         case 'LIVE':
+            console.log(`Live video, scheduling for later: ${youtubeVideoDetails.videoId}`)
             return 'SCHEDULED'
         case 'UPCOMING':
+            console.log(`Upcoming video, scheduling for later: ${youtubeVideoDetails.videoId}`)
             return 'SCHEDULED'
         case 'LONG':
+            console.log(`Skipping long video: ${youtubeVideoDetails.videoId}`)
             return 'SKIP'
         case 'SHORT':
+            console.log(`Skipping short video: ${youtubeVideoDetails.videoId}`)
             return 'SKIP'
         case 'STANDARD':
             if (youtubeVideoDetails.isMembersOnly || youtubeVideoDetails.privacyStatus === 'private') {
@@ -97,4 +101,4 @@ const isOlderThan24Hours = (publishedAt: string, now: number): boolean => {
     return now - publishedTime > 24 * 60 * 60 * 1000
 }
 
-export { getVideoProcessingRoute, checkVideoType, iso8601ToSeconds }
+export { getVideoProcessingMode, checkVideoType, iso8601ToSeconds }
