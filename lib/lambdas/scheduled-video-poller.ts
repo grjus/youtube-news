@@ -36,7 +36,7 @@ export const handler = async () => {
 
     for (const item of candidates) {
         try {
-            const { videoId, videoType } = item
+            const { videoId } = item
             const { processingMode, videoType: latestVideoType } = await extractProcessingMode(videoId, apiKey, now)
             if (processingMode !== 'IMMEDIATE') {
                 console.log('Video still not ready', { videoId: item.videoId, latestVideoType })
@@ -53,7 +53,7 @@ export const handler = async () => {
                 processingMode: 'IMMEDIATE',
                 captions: item.captions,
                 genre: item.genre,
-                [VIDEO_TYPE_KEY]: videoType
+                [VIDEO_TYPE_KEY]: latestVideoType
             }
 
             const execution = await sfnClient.send(
