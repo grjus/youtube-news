@@ -83,10 +83,13 @@ export class YoutubeVideoProcessorFlow extends Construct {
             outputPath: '$.Payload'
         })
 
-        const { onSummaryError, onDetailsError, onNotProcessed, onTranscriptError, onChatError, success } =
-            new YoutubeAlarms(this, 'YoutubeAlarms', {
+        const { onSummaryError, onNotProcessed, onTranscriptError, onChatError, success } = new YoutubeAlarms(
+            this,
+            'YoutubeAlarms',
+            {
                 alarmTopic
-            })
+            }
+        )
 
         const supadataFallbackFlow = Chain.start(videoSupadataTranscriptionStep).next(
             new Choice(this, 'Supadata:Transcription available?')
@@ -103,9 +106,7 @@ export class YoutubeVideoProcessorFlow extends Construct {
         )
 
         const videoReadyChoice = new Choice(this, 'Video ready for processing?')
-            .when(Condition.not(Condition.isPresent('$.videoType')), onDetailsError)
-            .when(Condition.stringEquals('$.processingMode', 'SCHEDULED'), onNotProcessed)
-            .when(Condition.stringEquals('$.processingMode', 'SKIP'), onNotProcessed)
+            .when(Condition.not(Condition.stringEquals('$.processingMode', 'IMMEDIATE')), onNotProcessed)
             .otherwise(transcriptionFlow)
             .afterwards()
 
