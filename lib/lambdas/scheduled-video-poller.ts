@@ -4,7 +4,12 @@ import { marshall } from '@aws-sdk/util-dynamodb'
 import { getSecretValue } from './client/sm.client'
 import { getScheduledNotifications } from './utils/dynamo.utils'
 import { MainTable, VIDEO_TYPE_KEY } from '../consts'
-import { YoutubeNotification, YoutubeVideoItem } from '../main.types'
+import {
+    YoutubeNotification,
+    YoutubeNotificationProcessingMode,
+    YoutubeVideoItem,
+    YoutubeVideoType
+} from '../main.types'
 import { checkVideoType, getVideoProcessingMode } from '../domain/video.router'
 import { getVideoDetails } from '../domain/youtube.tools'
 
@@ -31,11 +36,10 @@ export const handler = async () => {
 
     for (const item of candidates) {
         try {
-            const videoDetails = await getVideoDetails(item.videoId, apiKey)
-            const videoType = checkVideoType(videoDetails)
-            const videoProcessingRoute = getVideoProcessingMode(videoDetails, videoType, now)
-            if (videoProcessingRoute !== 'IMMEDIATE') {
-                console.log('Video still not ready', { videoId: item.videoId, videoType })
+            const { videoId } = item
+            const { processingMode, videoType: latestVideoType } = await extractProcessingMode(videoId, apiKey, now)
+            if (processingMode !== 'IMMEDIATE') {
+                console.log('Video still not ready', { videoId: item.videoId, latestVideoType })
                 continue
             }
 
@@ -49,7 +53,7 @@ export const handler = async () => {
                 processingMode: 'IMMEDIATE',
                 captions: item.captions,
                 genre: item.genre,
-                [VIDEO_TYPE_KEY]: videoType
+                [VIDEO_TYPE_KEY]: latestVideoType
             }
 
             const execution = await sfnClient.send(
@@ -70,6 +74,20 @@ export const handler = async () => {
             })
         }
     }
+}
+
+const extractProcessingMode = async (
+    videoId: string,
+    apiKey: string,
+    now: number
+): Promise<{
+    processingMode: YoutubeNotificationProcessingMode
+    videoType: YoutubeVideoType
+}> => {
+    const videoDetails = await getVideoDetails(videoId, apiKey)
+    const videoType = checkVideoType(videoDetails)
+    const processingMode = getVideoProcessingMode(videoDetails, videoType, now)
+    return { processingMode, videoType }
 }
 
 const markAsImmediate = async (item: YoutubeVideoItem, now: number) => {
