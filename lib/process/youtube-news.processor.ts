@@ -105,6 +105,7 @@ export class YoutubeVideoProcessorFlow extends Construct {
         const videoReadyChoice = new Choice(this, 'Video ready for processing?')
             .when(Condition.not(Condition.isPresent('$.videoType')), onDetailsError)
             .when(Condition.stringEquals('$.processingMode', 'SCHEDULED'), onNotProcessed)
+            .when(Condition.stringEquals('$.processingMode', 'SKIP'), onNotProcessed)
             .otherwise(transcriptionFlow)
             .afterwards()
 

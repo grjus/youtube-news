@@ -217,7 +217,7 @@ export type YoutubeVideo = Readonly<{
     publishedAt: number
     updatedAt: number
     processingMode: YoutubeNotificationProcessingMode
-    caption: YoutubeCaptionType
+    captions: YoutubeCaptionType
 }> &
     Message
 
