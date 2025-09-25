@@ -4,7 +4,7 @@ import { assertNever } from '../lambdas/utils/lambda.utils'
 const SHORT_VIDEO_MAX_DURATION_SECONDS = 180
 const LONG_VIDEO_MIN_DURATION_SECONDS = 60 * 60 * 3
 
-const getVideoProcessingRoute = (
+const getVideoProcessingMode = (
     youtubeVideoDetails: YoutubeVideoDetails,
     videoType: YoutubeVideoType,
     now: number
@@ -101,4 +101,4 @@ const isOlderThan24Hours = (publishedAt: string, now: number): boolean => {
     return now - publishedTime > 24 * 60 * 60 * 1000
 }
 
-export { getVideoProcessingRoute, checkVideoType, iso8601ToSeconds }
+export { getVideoProcessingMode, checkVideoType, iso8601ToSeconds }

@@ -5,7 +5,7 @@ import { getSecretValue } from './client/sm.client'
 import { getScheduledNotifications } from './utils/dynamo.utils'
 import { MainTable, VIDEO_TYPE_KEY } from '../consts'
 import { YoutubeNotification, YoutubeVideoItem } from '../main.types'
-import { checkVideoType, getVideoProcessingRoute } from '../domain/video.router'
+import { checkVideoType, getVideoProcessingMode } from '../domain/video.router'
 import { getVideoDetails } from '../domain/youtube.tools'
 
 const dynamoClient = new DynamoDBClient()
@@ -33,7 +33,7 @@ export const handler = async () => {
         try {
             const videoDetails = await getVideoDetails(item.videoId, apiKey)
             const videoType = checkVideoType(videoDetails)
-            const videoProcessingRoute = getVideoProcessingRoute(videoDetails, videoType, now)
+            const videoProcessingRoute = getVideoProcessingMode(videoDetails, videoType, now)
             if (videoProcessingRoute !== 'IMMEDIATE') {
                 console.log('Video still not ready', { videoId: item.videoId, videoType })
                 continue
