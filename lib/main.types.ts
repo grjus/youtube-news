@@ -2,7 +2,7 @@ import { AcceptablePK, ERROR_OUTPUT_ATTR_KEY, MainTable, MessageType, VIDEO_GENR
 import { UUID } from 'node:crypto'
 import { ILayerVersion } from 'aws-cdk-lib/aws-lambda'
 
-export type YoutubeNotificationProcessingMode = 'IMMEDIATE' | 'SCHEDULED'
+export type YoutubeNotificationProcessingMode = 'IMMEDIATE' | 'SCHEDULED' | 'SKIP'
 export type YoutubeCaptionType = 'AUTO_GENERATED' | 'USER_GENERATED' | 'NONE'
 
 export interface TimeStamps {
@@ -58,7 +58,7 @@ export interface YoutubeVideoItem extends MainItem {
     channelTitle: string
     channelUri: string
     publishedAt: number
-    caption: YoutubeCaptionType
+    captions: YoutubeCaptionType
     processingMode: YoutubeNotificationProcessingMode
 }
 
@@ -170,7 +170,7 @@ export type TranscriptVideo = Readonly<{
 }> &
     Message
 
-export type YoutubeVideoType = 'SHORT' | 'VIDEO' | 'LIVE' | 'UNKNOWN' | 'UPCOMING' | 'COMPLETED' | 'LONG'
+export type YoutubeVideoType = 'SHORT' | 'STANDARD' | 'LIVE' | 'UNKNOWN' | 'UPCOMING' | 'LONG'
 
 export type VideoGenre = 'TINFOIL' | 'SOFTWARE_ENGINEERING' | 'ALARM' | 'POLITICS' | 'SCIENCE'
 
@@ -199,7 +199,7 @@ export type YoutubeNotification = Readonly<{
     channelUri: string
     publishedAt: number
     processingMode: YoutubeNotificationProcessingMode
-    caption: YoutubeCaptionType
+    captions: YoutubeCaptionType
     genre: Exclude<VideoGenre, 'ALARM'>
     [VIDEO_TYPE_KEY]: YoutubeVideoType
 }>
@@ -228,4 +228,32 @@ export type SubscribedChannel = Readonly<{
     nextSubscriptionRenewalAt: string | null
     isActive: boolean
     isAvailableOnYoutube: boolean
+}>
+
+export type YoutubeLiveStreamingDetails = Readonly<{
+    actualStartTime?: string
+    actualEndTime?: string
+    scheduledStartTime?: string
+    activeLiveChatId?: string
+    scheduledEndTime?: string
+    concurrentViewers?: string
+}>
+
+export type YoutubeLifeBroadcastStatus = 'none' | 'upcoming' | 'live'
+
+export type YoutubeVideoDetails = Readonly<{
+    videoId: string
+    publishedAt: string
+    videoTitle: string
+    videoDescription: string
+    channelTitle: string
+    channelId: string
+    channelUri: string
+    liveBroadcastContent: YoutubeLifeBroadcastStatus
+    duration: string
+    durationSeconds: number
+    liveStreamingDetails?: YoutubeLiveStreamingDetails
+    privacyStatus: 'public' | 'private' | 'unlisted'
+    captions: YoutubeCaptionType
+    isMembersOnly: boolean
 }>

@@ -3,9 +3,10 @@ import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { getSecretValue } from './client/sm.client'
 import { getScheduledNotifications } from './utils/dynamo.utils'
-import { checkVideoType } from './utils/youtube.utils'
 import { MainTable, VIDEO_TYPE_KEY } from '../consts'
-import { YoutubeNotification, YoutubeNotificationItem } from '../main.types'
+import { YoutubeNotification, YoutubeVideoItem } from '../main.types'
+import { checkVideoType, getVideoProcessingRoute } from '../domain/video.router'
+import { getVideoDetails } from '../domain/youtube.tools'
 
 const dynamoClient = new DynamoDBClient()
 const sfnClient = new SFNClient()
@@ -30,9 +31,10 @@ export const handler = async () => {
 
     for (const item of candidates) {
         try {
-            const videoType = await checkVideoType(item.videoId, apiKey)
-            const readyForProcessing = videoType !== 'LIVE' && videoType !== 'UPCOMING'
-            if (!readyForProcessing) {
+            const videoDetails = await getVideoDetails(item.videoId, apiKey)
+            const videoType = checkVideoType(videoDetails)
+            const videoProcessingRoute = getVideoProcessingRoute(videoDetails, videoType, now)
+            if (videoProcessingRoute !== 'IMMEDIATE') {
                 console.log('Video still not ready', { videoId: item.videoId, videoType })
                 continue
             }
@@ -45,7 +47,7 @@ export const handler = async () => {
                 channelUri: item.channelUri,
                 publishedAt: item.publishedAt,
                 processingMode: 'IMMEDIATE',
-                caption: item.caption,
+                captions: item.captions,
                 genre: item.genre,
                 [VIDEO_TYPE_KEY]: videoType
             }
@@ -70,7 +72,7 @@ export const handler = async () => {
     }
 }
 
-const markAsImmediate = async (item: YoutubeNotificationItem, now: number) => {
+const markAsImmediate = async (item: YoutubeVideoItem, now: number) => {
     await dynamoClient.send(
         new UpdateItemCommand({
             TableName: tableName,

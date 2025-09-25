@@ -3,8 +3,8 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { badRequestResponse } from '../utils/lambda.utils'
 import { getChannel } from '../utils/dynamo.utils'
 import { toSubscribedChannelDto } from '../utils/mappers'
-import { checkIfChannelExists } from '../utils/youtube.utils'
 import { getSecretValue } from '../client/sm.client'
+import { checkIfChannelExists } from '../../domain/youtube.tools'
 
 const dynamoClient = new DynamoDBClient()
 

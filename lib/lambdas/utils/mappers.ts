@@ -13,7 +13,7 @@ import { AcceptablePK, MessageType, VIDEO_TYPE_KEY } from '../../consts'
 
 export const toYoutubeNotification = async (
     xmlPayload: string
-): Promise<null | Omit<YoutubeNotification, 'genre' | 'caption' | typeof VIDEO_TYPE_KEY>> => {
+): Promise<null | Omit<YoutubeNotification, 'genre' | 'captions' | typeof VIDEO_TYPE_KEY>> => {
     try {
         const parsedXml = await parseStringPromise(xmlPayload)
         console.log('Parsed XML:', JSON.stringify(parsedXml, null, 2))
@@ -31,7 +31,7 @@ export const toYoutubeNotification = async (
             channelUri: 'n/a',
             publishedAt,
             processingMode: 'IMMEDIATE'
-        } satisfies Omit<YoutubeNotification, 'genre' | 'caption' | typeof VIDEO_TYPE_KEY>
+        } satisfies Omit<YoutubeNotification, 'genre' | 'captions' | typeof VIDEO_TYPE_KEY>
     } catch (error) {
         console.error('Failed to parse XML payload', error)
         return null
