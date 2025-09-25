@@ -10,6 +10,32 @@ test('STANDARD VIDEO: Should return processing mode as IMMEDIATE', () => {
     expect(processingMode).toBe('IMMEDIATE')
 })
 
+test('STANDARD OLD VIDEO: Should return processing mode as SKIP', () => {
+    const publishedAt = Date.now() - 25 * 60 * 60 * 1000
+    const youtubeDetails = _testCreateYoutubeDetails({
+        duration: 'PT2H59M59S',
+        publishedAt: new Date(publishedAt).toISOString(),
+        liveStreamingDetails: undefined
+    })
+    const videoType = checkVideoType(youtubeDetails)
+    const processingMode = getVideoProcessingRoute(youtubeDetails, videoType, Date.now())
+    expect(processingMode).toBe('SKIP')
+})
+
+test('FINISHED LIVE STREAM OLD VIDEO: Should return processing mode as SKIP', () => {
+    const publishedAt = Date.now() - 25 * 60 * 60 * 1000
+    const youtubeDetails = _testCreateYoutubeDetails({
+        duration: 'PT2H59M59S',
+        publishedAt: new Date(publishedAt).toISOString(),
+        liveStreamingDetails: {
+            actualEndTime: new Date(publishedAt + 3 * 60 * 60 * 1000).toISOString()
+        }
+    })
+    const videoType = checkVideoType(youtubeDetails)
+    const processingMode = getVideoProcessingRoute(youtubeDetails, videoType, Date.now())
+    expect(processingMode).not.toBe('SKIP')
+})
+
 test('LIVE VIDEO: Should return processing mode as SCHEDULED', () => {
     const youtubeDetails = _testCreateYoutubeDetails({
         liveBroadcastContent: 'upcoming'
