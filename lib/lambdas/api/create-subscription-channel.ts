@@ -5,8 +5,8 @@ import { SubscriptionVideoChannel } from '../../env.types'
 import { putItem } from '../utils/dynamo.utils'
 import { SubscribedChannelItem } from '../../main.types'
 import { badRequestResponse, conflictResponse, createdResponse } from '../utils/lambda.utils'
-import { checkIfChannelExists } from '../utils/youtube.utils'
 import { getSecretValue } from '../client/sm.client'
+import { checkIfChannelExists } from '../../domain/youtube.tools'
 
 const dynamoClient = new DynamoDBClient()
 

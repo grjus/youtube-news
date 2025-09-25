@@ -1,13 +1,14 @@
 import { SQSEvent } from 'aws-lambda'
 import { toYoutubeNotification } from './utils/mappers'
-import { checkVideoDetails } from './utils/youtube.utils'
-import { YoutubeNotification, YoutubeNotificationProcessingMode, YoutubeVideoItem } from '../main.types'
+import { YoutubeNotification, YoutubeVideoItem } from '../main.types'
 import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
 import { getSecretValue } from './client/sm.client'
 import { AcceptablePK, VIDEO_TYPE_KEY } from '../consts'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { getChannel } from './utils/dynamo.utils'
+import { checkVideoType, getVideoProcessingRoute } from '../domain/video.router'
+import { getVideoDetails } from '../domain/youtube.tools'
 
 let youtubeApiKey: string | undefined = undefined
 const secretName = process.env.SECRET_NAME!
@@ -31,19 +32,14 @@ export const handler = async (event: SQSEvent) => {
             continue
         }
         console.log(`Received notification for videoId: ${baseNotification.videoId}`)
-        const { type, caption, details } = await checkVideoDetails(
-            baseNotification.videoId,
-            baseNotification.channelId,
-            secret.YOUTUBE_API_KEY
-        )
-        if (type === 'SHORT' || type === 'LONG') {
-            console.log(`Skipping non-live video [${type}]: ${baseNotification.videoId}`)
+        const videoDetails = await getVideoDetails(baseNotification.videoId, youtubeApiKey)
+        if (!videoDetails) {
+            console.warn(`Video details not found for videoId: ${baseNotification.videoId}, skipping...`)
             continue
         }
-        const processingMode: YoutubeNotificationProcessingMode =
-            type === 'LIVE' || type === 'UPCOMING' ? 'SCHEDULED' : 'IMMEDIATE'
-
-        const { channelId, videoId } = baseNotification
+        const videoType = checkVideoType(videoDetails)
+        const routeVideo = getVideoProcessingRoute(videoDetails, videoType, now)
+        const { channelId, videoId, channelTitle, channelUri, captions } = videoDetails
 
         const channelDetails = await getChannel(tableName, channelId, dynamoClient)
         if (!channelDetails) {
@@ -57,12 +53,12 @@ export const handler = async (event: SQSEvent) => {
 
         const youtubeNotification = {
             ...baseNotification,
-            channelTitle: details.channelTitle,
-            channelUri: details.channelUri,
+            channelTitle: channelTitle,
+            channelUri: channelUri,
             genre: channelDetails.genre,
-            caption,
-            processingMode,
-            [VIDEO_TYPE_KEY]: type
+            captions,
+            processingMode: routeVideo,
+            [VIDEO_TYPE_KEY]: videoType
         } satisfies YoutubeNotification
 
         try {
@@ -72,18 +68,26 @@ export const handler = async (event: SQSEvent) => {
             continue
         }
 
-        if (processingMode === 'IMMEDIATE') {
-            const stateMachineExecution = await sfnClient.send(
-                new StartExecutionCommand({
-                    input: JSON.stringify(youtubeNotification),
-                    stateMachineArn
-                })
-            )
-            console.log(
-                `Execution started: ${stateMachineExecution.executionArn}. Start date: ${stateMachineExecution.startDate}`
-            )
-        } else {
-            console.log(`Notification stored for scheduled polling: channel=${channelId}, video=${videoId}`)
+        switch (routeVideo) {
+            case 'IMMEDIATE':
+                const stateMachineExecution = await sfnClient.send(
+                    new StartExecutionCommand({
+                        input: JSON.stringify(youtubeNotification),
+                        stateMachineArn
+                    })
+                )
+                console.log(
+                    `Execution started: ${stateMachineExecution.executionArn}. Start date: ${stateMachineExecution.startDate}`
+                )
+                continue
+            case 'SCHEDULED':
+                console.log(`Notification stored for scheduled polling: channel=${channelId}, video=${videoId}`)
+                continue
+            case 'SKIP':
+                console.log(`Skipping video processing as per route decision: ${videoId} for channelId: ${channelId}`)
+                continue
+            default:
+                console.warn(`Unknown processing mode for videoId: ${videoId}. Skipping...`)
         }
     }
 }
@@ -96,7 +100,7 @@ const saveYoutubeVideoItem = async (notification: YoutubeNotification, now: numb
         publishedAt,
         videoId,
         videoTitle,
-        caption,
+        captions,
         genre,
         videoType,
         processingMode
@@ -114,7 +118,7 @@ const saveYoutubeVideoItem = async (notification: YoutubeNotification, now: numb
         videoId,
         videoTitle,
         videoType,
-        caption,
+        captions,
         processingMode,
         genre
     }

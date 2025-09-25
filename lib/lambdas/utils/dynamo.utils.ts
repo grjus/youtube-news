@@ -8,13 +8,7 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import { marshall, NativeAttributeValue, unmarshall } from '@aws-sdk/util-dynamodb'
 import { AcceptablePK, MainTable, PROCESSING_MODE_INDEX } from '../../consts'
-import {
-    MainItem,
-    SubscribedChannelItem,
-    TelegramChannelItem,
-    VideoGenre,
-    YoutubeNotificationItem
-} from '../../main.types'
+import { MainItem, SubscribedChannelItem, TelegramChannelItem, VideoGenre, YoutubeVideoItem } from '../../main.types'
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
 export const putItem = async <T extends MainItem>(
@@ -181,7 +175,7 @@ export const getScheduledNotifications = async (
     tableName: string,
     cutoffTimestamp: number,
     limit = 25
-): Promise<YoutubeNotificationItem[]> => {
+): Promise<YoutubeVideoItem[]> => {
     const params: QueryCommandInput = {
         TableName: tableName,
         IndexName: PROCESSING_MODE_INDEX,
@@ -203,5 +197,5 @@ export const getScheduledNotifications = async (
         return []
     }
 
-    return Items.map((item) => unmarshall(item) as YoutubeNotificationItem)
+    return Items.map((item) => unmarshall(item) as YoutubeVideoItem)
 }

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime
 from uuid import uuid4
@@ -6,7 +7,6 @@ from uuid import uuid4
 import boto3
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptList
 from youtube_transcript_api.proxies import WebshareProxyConfig
-import logging
 
 from helpers import put_transcription_entity_to_dynamo, to_video_transcript
 from schemas import YoutubeVideo, ErrorOutput, TranscriptVideoEntity, YoutubeCaption
@@ -33,7 +33,7 @@ def handler(event: YoutubeVideo, _):
             )
         )
         av_transcripts = ytt_api.list(event.get("videoId"))
-        transcript = _find_transcript(av_transcripts, event.get("caption"))
+        transcript = _find_transcript(av_transcripts, event.get("captions"))
         if not transcript:
             return ErrorOutput(
                 error="No transcripts found",
@@ -71,8 +71,8 @@ def handler(event: YoutubeVideo, _):
         ).model_dump()
 
 
-def _find_transcript(av_transcripts: TranscriptList, caption: YoutubeCaption):
-    match caption:
+def _find_transcript(av_transcripts: TranscriptList, captions: YoutubeCaption):
+    match captions:
         case "AUTO_GENERATED":
             logger.info("Searching for auto-generated transcript")
             return av_transcripts.find_generated_transcript(LANG_CODES).fetch()

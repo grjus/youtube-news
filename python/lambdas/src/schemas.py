@@ -38,7 +38,7 @@ class YoutubeVideo(TypedDict):
     updatedAt: int
     createdAt: int
     sendAt: int
-    caption: YoutubeCaption
+    captions: YoutubeCaption
 
 
 class ErrorOutput(BaseModel):
