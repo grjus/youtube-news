@@ -43,9 +43,8 @@ export const handler = async () => {
                 continue
             }
 
-            await updateProcessingMode(item, now, processingMode)
-
-            if (processingMode !== 'IMMEDIATE') {
+            if (processingMode === 'SKIP') {
+                await updateProcessingMode(item, now, processingMode)
                 console.log('Video not ready for immediate processing', {
                     videoId: item.videoId,
                     latestVideoType,
@@ -78,6 +77,7 @@ export const handler = async () => {
                 videoId: item.videoId,
                 executionArn: execution.executionArn
             })
+            await updateProcessingMode(item, now, processingMode)
         } catch (error) {
             console.error('Failed to process scheduled notification', {
                 videoId: item.videoId,
