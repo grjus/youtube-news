@@ -38,8 +38,18 @@ export const handler = async () => {
         try {
             const { videoId } = item
             const { processingMode, videoType: latestVideoType } = await extractProcessingMode(videoId, apiKey, now)
-            if (processingMode !== 'IMMEDIATE') {
-                console.log('Video still not ready', { videoId: item.videoId, latestVideoType })
+            if (processingMode === 'SCHEDULED') {
+                console.log('Video still pending: ', { videoId: item.videoId, latestVideoType })
+                continue
+            }
+
+            if (processingMode === 'SKIP') {
+                await updateProcessingMode(item, now, processingMode)
+                console.log('Video not ready for immediate processing', {
+                    videoId: item.videoId,
+                    latestVideoType,
+                    processingMode
+                })
                 continue
             }
 
@@ -62,11 +72,12 @@ export const handler = async () => {
                     input: JSON.stringify(notificationPayload)
                 })
             )
-            await markAsImmediate(item, now)
+
             console.log('Scheduled notification promoted to processing', {
                 videoId: item.videoId,
                 executionArn: execution.executionArn
             })
+            await updateProcessingMode(item, now, processingMode)
         } catch (error) {
             console.error('Failed to process scheduled notification', {
                 videoId: item.videoId,
@@ -90,7 +101,11 @@ const extractProcessingMode = async (
     return { processingMode, videoType }
 }
 
-const markAsImmediate = async (item: YoutubeVideoItem, now: number) => {
+const updateProcessingMode = async (
+    item: YoutubeVideoItem,
+    now: number,
+    processingMode: YoutubeNotificationProcessingMode
+) => {
     await dynamoClient.send(
         new UpdateItemCommand({
             TableName: tableName,
@@ -101,7 +116,7 @@ const markAsImmediate = async (item: YoutubeVideoItem, now: number) => {
             UpdateExpression: 'SET processingMode = :immediate, updatedAt = :updatedAt',
             ConditionExpression: 'processingMode = :scheduled',
             ExpressionAttributeValues: marshall({
-                ':immediate': 'IMMEDIATE',
+                ':immediate': processingMode,
                 ':updatedAt': now,
                 ':scheduled': 'SCHEDULED'
             })
