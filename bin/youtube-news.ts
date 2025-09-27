@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 import * as cdk from 'aws-cdk-lib'
-import { BaseStack } from '../lib/base-stack'
+import { MainStack } from '../infra/main-stack'
 import { env } from './env'
 
 const app = new cdk.App()
@@ -33,7 +33,7 @@ if (!envConfig) {
     )
 }
 
-new BaseStack(app, stackName, {
+new MainStack(app, stackName, {
     env: { region, account },
     ...envConfig
 })
