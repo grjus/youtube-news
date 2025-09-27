@@ -1,5 +1,5 @@
-import { YoutubeLiveStreamingDetails, YoutubeVideoDetails } from '../lib/main.types'
-import { iso8601ToSeconds } from '../lib/domain/video.router'
+import { YoutubeLiveStreamingDetails, YoutubeVideoDetails } from '../lib/domain/main.types'
+import { iso8601ToSeconds } from '../lib/domain/video/video.router'
 
 const _testCreateYoutubeDetails = ({
     duration = 'PT2M32S',

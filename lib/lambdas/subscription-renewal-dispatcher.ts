@@ -1,7 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs'
-import { getChannelsForSubscriptionRenewal } from './utils/dynamo.utils'
-import { MainTable } from '../consts'
+import { getChannelsForSubscriptionRenewal } from '../domain/client/dynamo.utils'
+import { MainTable } from '../domain/consts'
 
 const ddb = new DynamoDBClient()
 const sqs = new SQSClient()

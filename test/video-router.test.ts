@@ -1,4 +1,4 @@
-import { checkVideoType, getVideoProcessingMode } from '../lib/domain/video.router'
+import { checkVideoType, getVideoProcessingMode } from '../lib/domain/video/video.router'
 import { _testCreateYoutubeDetails } from './utils'
 
 test('STANDARD VIDEO: Should return processing mode as IMMEDIATE', () => {

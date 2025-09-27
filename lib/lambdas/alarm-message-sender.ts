@@ -1,9 +1,9 @@
 import { SQSEvent } from 'aws-lambda'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { getTelegramChannel } from './utils/dynamo.utils'
-import { sendMessageToTelegramChannel } from './client/telegram.client'
-import { getSecretValue } from './client/sm.client'
-import { toAlarmMessage } from './utils/chat-message.formatter'
+import { getTelegramChannel } from '../domain/client/dynamo.utils'
+import { sendMessageToTelegramChannel } from '../infra/client/telegram.client'
+import { getSecretValue } from '../infra/client/sm.client'
+import { toAlarmMessage } from '../domain/chat/message.formatter'
 
 const tableName = process.env.TABLE_NAME!
 const secretName = process.env.SECRET_NAME!

@@ -5,8 +5,8 @@ import {
     SoftwareEngineeringSummaryResults,
     TinfoilSummaryResults,
     VideoSummary
-} from '../../main.types'
-import { assertNever } from './lambda.utils'
+} from '../main.types'
+import { assertNever } from '../client/lambda.utils'
 
 export const toTinfoilMarkdown = (message: VideoSummary<TinfoilSummaryResults>) => {
     const { shortSummary, absurdityLevel, summary } = message.summary

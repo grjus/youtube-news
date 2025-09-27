@@ -7,8 +7,8 @@ import {
     QueryCommandInput
 } from '@aws-sdk/client-dynamodb'
 import { marshall, NativeAttributeValue, unmarshall } from '@aws-sdk/util-dynamodb'
-import { AcceptablePK, MainTable, PROCESSING_MODE_INDEX } from '../../consts'
-import { MainItem, SubscribedChannelItem, TelegramChannelItem, VideoGenre, YoutubeVideoItem } from '../../main.types'
+import { AcceptablePK, MainTable, PROCESSING_MODE_INDEX } from '../consts'
+import { MainItem, SubscribedChannelItem, TelegramChannelItem, VideoGenre, YoutubeVideoItem } from '../main.types'
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
 export const putItem = async <T extends MainItem>(

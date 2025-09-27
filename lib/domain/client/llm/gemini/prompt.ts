@@ -11,7 +11,7 @@ import {
     SOFTWARE_ENGINEERING_RESPONSE_SCHEMA,
     TINFOIL_RESPONSE_SCHEMA
 } from '../response.schema'
-import { assertNever } from '../../utils/lambda.utils'
+import { assertNever } from '../../lambda.utils'
 
 export const TINFOIL_SYSTEM_PROMPT = TINFOIL_SYSTEM_PROMPT_TEXT
 export const SOFTWARE_ENGINEERING_SYSTEM_PROMPT = SOFTWARE_ENGINEERING_SYSTEM_PROMPT_TEXT

@@ -1,8 +1,8 @@
-import { ChatNewsMessageInputPayload, ErrorOutput } from '../main.types'
-import { sendMessageToTelegramChannel } from './client/telegram.client'
-import { getTelegramChannel } from './utils/dynamo.utils'
+import { ChatNewsMessageInputPayload, ErrorOutput } from '../domain/main.types'
+import { sendMessageToTelegramChannel } from '../infra/client/telegram.client'
+import { getTelegramChannel } from '../domain/client/dynamo.utils'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { getSecretValue } from './client/sm.client'
+import { getSecretValue } from '../infra/client/sm.client'
 
 const tableName = process.env.TABLE_NAME!
 const dynamoClient = new DynamoDBClient()

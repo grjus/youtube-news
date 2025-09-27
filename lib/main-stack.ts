@@ -3,13 +3,13 @@ import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { EnvConfig } from './env.types'
 import { Topic } from 'aws-cdk-lib/aws-sns'
-import { awsSdkModuleName, MainTable, PROCESSING_MODE_INDEX, STATE_MACHINE_ARN_ATTR } from './consts'
+import { awsSdkModuleName, MainTable, PROCESSING_MODE_INDEX, STATE_MACHINE_ARN_ATTR } from './domain/consts'
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { StringParameter } from 'aws-cdk-lib/aws-ssm'
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { Queue } from 'aws-cdk-lib/aws-sqs'
-import { YoutubeVideoProcessorFlow } from './process/youtube-news.processor'
+import { YoutubeVideoProcessorFlow } from './state-machines/youtube-summary.processor'
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { join } from 'path'
@@ -17,11 +17,11 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
-import { YoutubeNewsApi } from './lambdas/api/api.youtube-subscription'
-import { YoutubePubSub } from './lambdas/constructs/youtube-pubsub'
-import { lambdaFactory } from './lambdas/utils/lambda.utils'
+import { YoutubeNewsApi } from './infra/api/api.youtube-subscription'
+import { YoutubePubSub } from './infra/youtube-pubsub'
+import { lambdaFactory } from './domain/client/lambda.utils'
 
-export class BaseStack extends Stack {
+export class MainStack extends Stack {
     constructor(
         scope: Construct,
         id: string,

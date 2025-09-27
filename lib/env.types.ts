@@ -1,6 +1,6 @@
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { RemovalPolicy } from 'aws-cdk-lib'
-import { VideoGenre } from './main.types'
+import { VideoGenre } from './domain/main.types'
 
 export type SubscriptionVideoChannel = Readonly<{
     channelId: string

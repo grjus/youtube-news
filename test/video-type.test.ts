@@ -1,5 +1,5 @@
-import { YoutubeVideoDetails } from '../lib/main.types'
-import { checkVideoType } from '../lib/domain/video.router'
+import { YoutubeVideoDetails } from '../lib/domain/main.types'
+import { checkVideoType } from '../lib/domain/video/video.router'
 
 test('Should detect STANDARD video', () => {
     const youtubeDetails = {

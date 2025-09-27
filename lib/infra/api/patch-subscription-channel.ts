@@ -1,8 +1,8 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { SubscriptionVideoChannel } from '../../env.types'
-import { updateSubscriptionChannel } from '../utils/dynamo.utils'
-import { badRequestResponse, createdResponse } from '../utils/lambda.utils'
+import { updateSubscriptionChannel } from '../../domain/client/dynamo.utils'
+import { badRequestResponse, createdResponse } from '../../domain/client/lambda.utils'
 
 const dynamoClient = new DynamoDBClient()
 

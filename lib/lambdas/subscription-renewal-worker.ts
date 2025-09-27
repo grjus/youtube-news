@@ -1,6 +1,6 @@
 import { SQSEvent } from 'aws-lambda'
-import { getSecretValue } from './client/sm.client'
-import { subscribeOnce, unsubscribeOnce } from '../domain/youtube.tools'
+import { getSecretValue } from '../infra/client/sm.client'
+import { subscribeOnce, unsubscribeOnce } from '../domain/video/youtube.tools'
 
 const secretName = process.env.SECRET_NAME!
 const apiUrl = process.env.API_URL!

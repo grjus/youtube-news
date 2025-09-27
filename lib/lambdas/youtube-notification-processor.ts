@@ -1,19 +1,19 @@
 import { SQSEvent } from 'aws-lambda'
-import { toYoutubeNotification } from './utils/mappers'
+import { toYoutubeNotification } from '../domain/mappers'
 import {
     SubscribedChannelItem,
     YoutubeNotification,
     YoutubeNotificationProcessingMode,
     YoutubeVideoItem
-} from '../main.types'
+} from '../domain/main.types'
 import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
-import { getSecretValue } from './client/sm.client'
-import { AcceptablePK, VIDEO_TYPE_KEY } from '../consts'
+import { getSecretValue } from '../infra/client/sm.client'
+import { AcceptablePK, VIDEO_TYPE_KEY } from '../domain/consts'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import { getChannel } from './utils/dynamo.utils'
-import { checkVideoType, getVideoProcessingMode } from '../domain/video.router'
-import { getVideoDetails } from '../domain/youtube.tools'
+import { getChannel } from '../domain/client/dynamo.utils'
+import { checkVideoType, getVideoProcessingMode } from '../domain/video/video.router'
+import { getVideoDetails } from '../domain/video/youtube.tools'
 
 let youtubeApiKey: string | undefined = undefined
 const secretName = process.env.SECRET_NAME!

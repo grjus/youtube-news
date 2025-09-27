@@ -6,7 +6,7 @@ import { Duration, RemovalPolicy } from 'aws-cdk-lib'
 import { Architecture, ILayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda'
 
 import { IQueue } from 'aws-cdk-lib/aws-sqs'
-import { globalLambdaProps } from '../../consts'
+import { globalLambdaProps } from '../consts'
 
 export const createdResponse = (message: string): APIGatewayProxyResult => {
     return {

@@ -1,5 +1,5 @@
 import { YoutubeNotificationProcessingMode, YoutubeVideoDetails, YoutubeVideoType } from '../main.types'
-import { assertNever } from '../lambdas/utils/lambda.utils'
+import { assertNever } from '../client/lambda.utils'
 
 const SHORT_VIDEO_MAX_DURATION_SECONDS = 180
 const LONG_VIDEO_MIN_DURATION_SECONDS = 60 * 60 * 3

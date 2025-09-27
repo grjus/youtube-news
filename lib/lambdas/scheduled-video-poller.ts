@@ -1,17 +1,17 @@
 import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb'
 import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import { getSecretValue } from './client/sm.client'
-import { getScheduledNotifications } from './utils/dynamo.utils'
-import { MainTable, VIDEO_TYPE_KEY } from '../consts'
+import { getSecretValue } from '../infra/client/sm.client'
+import { getScheduledNotifications } from '../domain/client/dynamo.utils'
+import { MainTable, VIDEO_TYPE_KEY } from '../domain/consts'
 import {
     YoutubeNotification,
     YoutubeNotificationProcessingMode,
     YoutubeVideoItem,
     YoutubeVideoType
-} from '../main.types'
-import { checkVideoType, getVideoProcessingMode } from '../domain/video.router'
-import { getVideoDetails } from '../domain/youtube.tools'
+} from '../domain/main.types'
+import { checkVideoType, getVideoProcessingMode } from '../domain/video/video.router'
+import { getVideoDetails } from '../domain/video/youtube.tools'
 
 const dynamoClient = new DynamoDBClient()
 const sfnClient = new SFNClient()

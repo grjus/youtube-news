@@ -8,8 +8,8 @@ import {
     VideoSummary,
     VideoSummaryItem,
     YoutubeNotification
-} from '../../main.types'
-import { AcceptablePK, MessageType, VIDEO_TYPE_KEY } from '../../consts'
+} from './main.types'
+import { AcceptablePK, MessageType, VIDEO_TYPE_KEY } from './consts'
 
 export const toYoutubeNotification = async (
     xmlPayload: string

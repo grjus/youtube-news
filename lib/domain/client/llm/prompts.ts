@@ -1,5 +1,5 @@
 import { VideoGenre } from '../../main.types'
-import { assertNever } from '../utils/lambda.utils'
+import { assertNever } from '../lambda.utils'
 
 export const TINFOIL_SYSTEM_PROMPT_TEXT = `
 Jesteś fanem wszelkich teorii spiskowych. Im wiecej absurdu tym lepiej. Z jednej strony wiesz, ze to wszytsko jest

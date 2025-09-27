@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda'
-import { getSecretValue } from './client/sm.client'
+import { getSecretValue } from '../infra/client/sm.client'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns'
 

@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda'
-import { updateSubscriptionChannel } from './utils/dynamo.utils'
+import { updateSubscriptionChannel } from '../domain/client/dynamo.utils'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
 const tableName = process.env.TABLE_NAME!

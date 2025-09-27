@@ -1,14 +1,14 @@
 import { Construct } from 'constructs'
 import { IQueue } from 'aws-cdk-lib/aws-sqs'
-import { lambdaFactory } from '../utils/lambda.utils'
+import { lambdaFactory } from '../domain/client/lambda.utils'
 import { join } from 'path'
 import { RemovalPolicy } from 'aws-cdk-lib'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { ITableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager'
-import { awsSdkModuleName } from '../../consts'
+import { awsSdkModuleName } from '../domain/consts'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
-import { LayerDefinition } from '../../main.types'
+import { LayerDefinition } from '../domain/main.types'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 
 type YoutubePubSubProps = Readonly<{

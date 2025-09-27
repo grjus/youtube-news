@@ -4,15 +4,15 @@ import {
     ErrorOutput,
     TranscriptVideo,
     VideoSummaryItem
-} from '../main.types'
+} from '../domain/main.types'
 import { LLMParams } from '../env.types'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
-import { AcceptablePK } from '../consts'
+import { AcceptablePK } from '../domain/consts'
 import { randomUUID } from 'node:crypto'
-import { toVideoSummary } from './utils/mappers'
+import { toVideoSummary } from '../domain/mappers'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import { invokeBedrockModel, invokeGeminiModel } from './llm/llm.client'
-import { toChatMessageMarkdown } from './utils/chat-message.formatter'
+import { invokeBedrockModel, invokeGeminiModel } from '../domain/client/llm/llm.client'
+import { toChatMessageMarkdown } from '../domain/chat/message.formatter'
 
 const llmParams = JSON.parse(process.env.LLM_PARAMS!) as LLMParams
 const tableName = process.env.TABLE_NAME!

@@ -1,4 +1,4 @@
-import { iso8601ToSeconds } from '../lib/domain/video.router'
+import { iso8601ToSeconds } from '../lib/domain/video/video.router'
 
 test('Should convert io8601 SHORT to seconds', () => {
     const isoDuration = 'PT3M32S'

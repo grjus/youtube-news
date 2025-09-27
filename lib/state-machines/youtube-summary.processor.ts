@@ -2,7 +2,7 @@ import { Construct } from 'constructs'
 import { ITableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Duration, RemovalPolicy } from 'aws-cdk-lib'
-import { LayerDefinition } from '../main.types'
+import { LayerDefinition } from '../domain/main.types'
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks'
 import {
     Chain,
@@ -16,9 +16,9 @@ import {
 import { ITopic } from 'aws-cdk-lib/aws-sns'
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager'
 import { LLMParams } from '../env.types'
-import { YoutubeContent } from '../lambdas/constructs/youtube-content'
-import { YoutubeAlarms } from '../lambdas/constructs/youtube-alarms'
-import { ERROR_OUTPUT_ATTR_KEY } from '../consts'
+import { YoutubeContent } from './youtube-content'
+import { YoutubeAlarms } from './youtube-alarms'
+import { ERROR_OUTPUT_ATTR_KEY } from '../domain/consts'
 
 export type YoutubeVideoProcessorFlowProps = Readonly<{
     mainTable: ITableV2

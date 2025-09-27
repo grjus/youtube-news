@@ -13,7 +13,7 @@ import {
     softwareEngineeringSummaryToolConfiguration,
     tinfoilSummaryToolConfiguration
 } from './tool.configuration'
-import { assertNever } from '../../utils/lambda.utils'
+import { assertNever } from '../../lambda.utils'
 
 export const TINFOIL_BEDROCK_SYSTEM_PROMPT: SystemContentBlock[] = [
     {

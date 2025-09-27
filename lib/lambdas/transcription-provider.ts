@@ -1,11 +1,11 @@
-import { ErrorOutput, TranscriptVideoItem, YoutubeVideo } from '../main.types'
+import { ErrorOutput, TranscriptVideoItem, YoutubeVideo } from '../domain/main.types'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
-import { getSecretValue } from './client/sm.client'
-import { AcceptablePK } from '../consts'
+import { getSecretValue } from '../infra/client/sm.client'
+import { AcceptablePK } from '../domain/consts'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { Supadata, Transcript, TranscriptChunk, TranscriptOrJobId } from '@supadata/js'
 import { randomUUID } from 'node:crypto'
-import { toVideoTranscript } from './utils/mappers'
+import { toVideoTranscript } from '../domain/mappers'
 import type { Context } from 'aws-lambda'
 
 const dynamoClient = new DynamoDBClient({})

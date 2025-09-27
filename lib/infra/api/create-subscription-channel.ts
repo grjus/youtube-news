@@ -1,12 +1,12 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { toSubscribedChannelEntity } from '../utils/mappers'
+import { toSubscribedChannelEntity } from '../../domain/mappers'
 import { SubscriptionVideoChannel } from '../../env.types'
-import { putItem } from '../utils/dynamo.utils'
-import { SubscribedChannelItem } from '../../main.types'
-import { badRequestResponse, conflictResponse, createdResponse } from '../utils/lambda.utils'
+import { putItem } from '../../domain/client/dynamo.utils'
+import { SubscribedChannelItem } from '../../domain/main.types'
+import { badRequestResponse, conflictResponse, createdResponse } from '../../domain/client/lambda.utils'
 import { getSecretValue } from '../client/sm.client'
-import { checkIfChannelExists } from '../../domain/youtube.tools'
+import { checkIfChannelExists } from '../../domain/video/youtube.tools'
 
 const dynamoClient = new DynamoDBClient()
 
