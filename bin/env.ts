@@ -1,5 +1,5 @@
 import { RemovalPolicy, StackProps } from 'aws-cdk-lib'
-import { EnvConfig } from '../lib/env.types'
+import { EnvConfig } from '../src/config/env-types'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 
 const DEFAULT_STACK_NAME = 'YoutubeNewsStack'

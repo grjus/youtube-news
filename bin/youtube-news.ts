@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 import * as cdk from 'aws-cdk-lib'
-import { MainStack } from '../lib/main-stack'
+import { MainStack } from '../infra/main-stack'
 import { env } from './env'
 
 const app = new cdk.App()

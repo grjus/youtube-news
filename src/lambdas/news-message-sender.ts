@@ -1,0 +1,33 @@
+import { ChatNewsMessageInputPayload, ErrorOutput } from '../domain/main-types'
+import { sendMessageToTelegramChannel } from '../clients/aws/telegram-client'
+import { getTelegramChannel } from '../domain/client/dynamo-utils'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { getSecretValue } from '../clients/aws/secrets-manager-client'
+
+const tableName = process.env.TABLE_NAME!
+const dynamoClient = new DynamoDBClient()
+const secretName = process.env.SECRET_NAME!
+
+export const handler = async (payload: ChatNewsMessageInputPayload) => {
+    try {
+        const secret = await getSecretValue(secretName)
+        const telegramChannel = await getTelegramChannel(payload.genre, tableName, dynamoClient)
+        if (!telegramChannel) {
+            console.error(`Error getting Telegram Channel for genre: ${payload.genre}`)
+            return {
+                error: `Error getting Telegram Channel for genre: ${payload.genre}`,
+                payload,
+                subject: `${payload.genre} Chat Message Sender`
+            } satisfies ErrorOutput
+        }
+        await sendMessageToTelegramChannel(payload.message, secret.BOT_API_KEY, telegramChannel.channelId)
+        return payload
+    } catch (error) {
+        console.log('Error sending message to telegram', error)
+        return {
+            error: 'Error sending message to Telegram',
+            payload: { error, payload },
+            subject: `${payload.genre} Chat Message Sender`
+        } satisfies ErrorOutput
+    }
+}
