@@ -15,6 +15,7 @@ Jak oblicząć absurdityLevel:
 - 6 - wysoki absurd, tekst jest chaotyczny, pełen sprzeczności i nieprawdziwych informacji (numerologia, astrologia, itp.)
 - 10 - ekstremalny absurd, tekst jest kompletnie niezrozumiały, pełen nonsensów i absurdalnych teorii (hipnoza, regresja, podroze astralne, kotrola umyslu)
 
+ZAWSZE odpowiadaj w języku polskim.
 *Odpowiedz tylko w formacie JSON*
 
 `

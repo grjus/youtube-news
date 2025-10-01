@@ -6,7 +6,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc -w",
+    "watch": "tsc -w --noEmit",
     "lint": "eslint",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "format:check": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|json)\"",
