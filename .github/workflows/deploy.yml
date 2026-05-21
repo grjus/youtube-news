@@ -27,20 +27,6 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Verify Secrets
-        run: |
-          if [ -z "${{ secrets.AWS_ACCOUNT_ID }}" ]; then
-            echo "::error::AWS_ACCOUNT_ID secret is empty!"
-            exit 1
-          fi
-          if [ -z "${{ vars.AWS_REGION }}" ]; then
-            echo "::error::AWS_REGION variable is empty!"
-            exit 1
-          fi
-          echo "AWS Account ID length: ${#${{ secrets.AWS_ACCOUNT_ID }}}"
-          echo "AWS Region: ${{ vars.AWS_REGION }}"
-          echo "Github Repository: ${{ github.repository }}"
-
       - name: Configure AWS Credentials (Diff Role)
         uses: aws-actions/configure-aws-credentials@v4
         with:
