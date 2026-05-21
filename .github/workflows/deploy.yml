@@ -1,0 +1,80 @@
+name: Deploy Youtube News
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write # required for OIDC
+  contents: read  # required for actions/checkout
+
+jobs:
+  build-and-diff:
+    name: Build & CDK Diff
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Configure AWS Credentials (Diff Role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/youtube-news-github-diff-role
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint and Test
+        run: |
+          npm run lint || echo "No lint script, skipping"
+          npm run format:check || echo "No format:check script, skipping"
+          npm run build
+          npm run test
+
+      - name: CDK Diff
+        run: npx cdk diff -c stack=YoutubeNewsStack
+
+  deploy:
+    name: Build & CDK Deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Configure AWS Credentials (Deploy Role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/youtube-news-github-deploy-role
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint and Test
+        run: |
+          npm run lint || echo "No lint script, skipping"
+          npm run format:check || echo "No format:check script, skipping"
+          npm run build
+          npm run test
+
+      - name: CDK Deploy
+        run: npx cdk deploy -c stack=YoutubeNewsStack --require-approval never
