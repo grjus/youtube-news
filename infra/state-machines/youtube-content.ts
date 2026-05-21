@@ -86,7 +86,12 @@ export class YoutubeContent extends Construct {
 
         const pythonLayer = new PythonLayerVersion(this, 'PythonTranscriptionLayer', {
             entry: join('python', 'lambdas'),
-            compatibleRuntimes: [Runtime.PYTHON_3_12]
+            compatibleRuntimes: [Runtime.PYTHON_3_12],
+            bundling: {
+                environment: {
+                    UV_CACHE_DIR: '/tmp/.uv-cache'
+                }
+            }
         })
 
         const pythonLambda = new PythonFunction(this, 'PythonTranscription', {
@@ -98,6 +103,11 @@ export class YoutubeContent extends Construct {
                 SECRET_NAME: secret.secretName
             },
             timeout: Duration.seconds(120),
+            bundling: {
+                environment: {
+                    UV_CACHE_DIR: '/tmp/.uv-cache'
+                }
+            },
             layers: [pythonLayer],
             description: 'Extracts auto generated transcripts from YouTube videos',
             logGroup: new LogGroup(this, 'PythonTranscriptionFuncLogGroup', {
