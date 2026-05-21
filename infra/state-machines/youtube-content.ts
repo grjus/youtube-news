@@ -89,7 +89,8 @@ export class YoutubeContent extends Construct {
             compatibleRuntimes: [Runtime.PYTHON_3_12],
             bundling: {
                 environment: {
-                    UV_CACHE_DIR: '/tmp/.uv-cache'
+                    UV_CACHE_DIR: '/tmp/.uv-cache',
+                    HOME: '/tmp'
                 }
             }
         })
@@ -105,7 +106,8 @@ export class YoutubeContent extends Construct {
             timeout: Duration.seconds(120),
             bundling: {
                 environment: {
-                    UV_CACHE_DIR: '/tmp/.uv-cache'
+                    UV_CACHE_DIR: '/tmp/.uv-cache',
+                    HOME: '/tmp'
                 }
             },
             layers: [pythonLayer],
