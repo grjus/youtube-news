@@ -15,6 +15,7 @@ const sfnClient = new SFNClient()
 const OK: APIGatewayProxyResult = { statusCode: 200, body: '' }
 
 type TelegramMessage = {
+    message_id: number
     chat: { id: number }
     text?: string
 }
@@ -57,11 +58,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return OK
     }
 
+    const messageId = telegramMessage.message_id
+
     try {
         const execution = await sfnClient.send(
             new StartExecutionCommand({
                 stateMachineArn,
-                input: JSON.stringify({ chatId, videoId })
+                input: JSON.stringify({ chatId, videoId, messageId })
             })
         )
         console.log(`Started execution: ${execution.executionArn}`)

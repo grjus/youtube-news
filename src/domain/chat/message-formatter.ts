@@ -106,9 +106,8 @@ const TELEGRAM_MAX_LENGTH = 4096
 
 export const toOnDemandMarkdown = (message: VideoSummary<OnDemandSummaryResults>): string => {
     const { shortSummary, summary } = message.summary
-    const url = `https://youtu.be/${message.videoId}`
 
-    const header = `${url}\n\n${shortSummary}\n\n`
+    const header = `${shortSummary}\n\n`
     const budget = TELEGRAM_MAX_LENGTH - header.length
 
     const bulletLines: string[] = []

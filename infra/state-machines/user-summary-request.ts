@@ -80,6 +80,7 @@ export class UserSummaryRequestFlow extends Construct {
             parameters: {
                 'videoId.$': '$.videoId',
                 'chatId.$': '$.chatId',
+                'messageId.$': '$.messageId',
                 genre: 'ON_DEMAND',
                 captions: 'AUTO_GENERATED',
                 videoType: 'STANDARD',
@@ -111,6 +112,7 @@ export class UserSummaryRequestFlow extends Construct {
             lambdaFunction: userSummarySenderFunction,
             payload: TaskInput.fromObject({
                 chatId: JsonPath.stringAt('$.chatId'),
+                messageId: JsonPath.numberAt('$.messageId'),
                 message: JsonPath.stringAt('$.summaryResult.Payload.message')
             }),
             outputPath: '$.Payload'

@@ -43,10 +43,10 @@ test('ON_DEMAND formatter includes all bullet points', () => {
     expect(result).toContain('• Key takeaway 3')
 })
 
-test('ON_DEMAND formatter includes the youtu.be URL', () => {
+test('ON_DEMAND formatter does not include the youtu.be URL', () => {
     const message = createOnDemandSummary()
     const result = toOnDemandMarkdown(message)
-    expect(result).toContain('https://youtu.be/dQw4w9WgXcQ')
+    expect(result).not.toContain('https://youtu.be/dQw4w9WgXcQ')
 })
 
 test('ON_DEMAND formatter truncates bullets when message would exceed 4096 chars', () => {

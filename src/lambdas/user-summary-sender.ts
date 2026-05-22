@@ -6,13 +6,14 @@ const secretName = process.env.SECRET_NAME!
 
 export type UserSummaryMessagePayload = Readonly<{
     chatId: string
+    messageId?: number
     message: string
 }>
 
 export const handler = async (payload: UserSummaryMessagePayload): Promise<UserSummaryMessagePayload | ErrorOutput> => {
     try {
         const secret = await getSecretValue(secretName)
-        await sendMessageToTelegramChannel(payload.message, secret.BOT_API_KEY, payload.chatId)
+        await sendMessageToTelegramChannel(payload.message, secret.BOT_API_KEY, payload.chatId, payload.messageId)
         return payload
     } catch (error) {
         console.error('Error sending summary to user', error instanceof Error ? error.message : String(error))
