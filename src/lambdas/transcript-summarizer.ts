@@ -65,7 +65,11 @@ export const handler = async (payload: TranscriptVideo) => {
         )
 
         const videoSummary = toVideoSummary(videoSummaryEntity)
-        const message = toChatMessageMarkdown(videoSummary)
+        const baseMessage = toChatMessageMarkdown(videoSummary)
+        const message =
+            videoSummary.genre === 'ON_DEMAND'
+                ? `${baseMessage}\n\n<i>model: ${modelUsed}</i>`
+                : baseMessage
         return {
             genre: videoSummary.genre,
             message
