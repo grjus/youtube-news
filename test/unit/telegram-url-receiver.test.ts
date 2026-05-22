@@ -132,9 +132,7 @@ describe('telegram-url-receiver', () => {
         })
 
         test('returns 200 without execution when message text is absent', async () => {
-            const result = await handler(
-                makeEvent({ update_id: 1, message: { chat: { id: -100111 } } })
-            )
+            const result = await handler(makeEvent({ update_id: 1, message: { chat: { id: -100111 } } }))
             expect(result.statusCode).toBe(200)
             expect(mockSend).not.toHaveBeenCalled()
         })

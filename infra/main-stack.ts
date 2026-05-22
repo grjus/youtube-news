@@ -27,7 +27,15 @@ export class MainStack extends Stack {
     constructor(
         scope: Construct,
         id: string,
-        { mainDynamoDbParams, llmParams, logRetention, removalPolicy, layers, secretParams, allowedChatIds }: StackProps & EnvConfig
+        {
+            mainDynamoDbParams,
+            llmParams,
+            logRetention,
+            removalPolicy,
+            layers,
+            secretParams,
+            allowedChatIds
+        }: StackProps & EnvConfig
     ) {
         super(scope, id)
 
