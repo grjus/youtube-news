@@ -16,10 +16,10 @@ export const handler = async (payload: UserSummaryMessagePayload): Promise<UserS
         await sendMessageToTelegramChannel(payload.message, secret.BOT_API_KEY, payload.chatId)
         return payload
     } catch (error) {
-        console.error('Error sending summary to user', error)
+        console.error('Error sending summary to user', error instanceof Error ? error.message : String(error))
         return {
             error: 'Error sending summary to user',
-            payload: { error, chatId: payload.chatId },
+            payload: { chatId: payload.chatId },
             subject: 'User Summary Sender'
         } satisfies ErrorOutput
     }

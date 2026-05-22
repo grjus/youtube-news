@@ -153,14 +153,11 @@ export class UserSummaryRequestFlow extends Construct {
                 .afterwards()
         )
 
-        const chain = Chain.start(videoDetailsFetcherStep)
-            .next(
-                new Choice(this, 'Video details available?')
-                    .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onTranscriptError)
-                    .otherwise(transcriptionFlow)
-                    .afterwards()
-            )
-            .next(summaryAndSendFlow)
+        const chain = Chain.start(videoDetailsFetcherStep).next(
+            new Choice(this, 'Video details available?')
+                .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onTranscriptError)
+                .otherwise(transcriptionFlow)
+        )
 
         this.stateMachine = new StateMachine(this, 'UserSummaryStateMachine', {
             stateMachineName: `${stackName}-UserSummaryStateMachine`,
