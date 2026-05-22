@@ -171,3 +171,24 @@ export const SCIENCE_RESPONSE_SCHEMA = {
     },
     required: ['summary', 'shortSummary']
 } as const
+
+export const ON_DEMAND_RESPONSE_SCHEMA = {
+    type: 'object',
+    properties: {
+        summary: {
+            type: 'array',
+            description: 'List of 5-7 concise bullet points capturing the key takeaways from the video.',
+            minItems: 3,
+            maxItems: 7,
+            items: {
+                type: 'string',
+                description: 'A single key takeaway (1-2 sentences).'
+            }
+        },
+        shortSummary: {
+            type: 'string',
+            description: 'One-sentence TL;DR capturing the main theme of the video.'
+        }
+    },
+    required: ['summary', 'shortSummary']
+} as const

@@ -1,4 +1,5 @@
 import {
+    ON_DEMAND_SYSTEM_PROMPT_TEXT,
     POLITICS_SYSTEM_PROMPT_TEXT,
     SCIENCE_SYSTEM_PROMPT_TEXT,
     SOFTWARE_ENGINEERING_SYSTEM_PROMPT_TEXT,
@@ -6,6 +7,7 @@ import {
 } from '../prompts'
 import { VideoGenre } from '../../../main-types'
 import {
+    ON_DEMAND_RESPONSE_SCHEMA,
     POLITICS_RESPONSE_SCHEMA,
     SCIENCE_RESPONSE_SCHEMA,
     SOFTWARE_ENGINEERING_RESPONSE_SCHEMA,
@@ -17,6 +19,7 @@ export const TINFOIL_SYSTEM_PROMPT = TINFOIL_SYSTEM_PROMPT_TEXT
 export const SOFTWARE_ENGINEERING_SYSTEM_PROMPT = SOFTWARE_ENGINEERING_SYSTEM_PROMPT_TEXT
 export const POLITICS_SYSTEM_PROMPT = POLITICS_SYSTEM_PROMPT_TEXT
 export const SCIENCE_SYSTEM_PROMPT = SCIENCE_SYSTEM_PROMPT_TEXT
+export const ON_DEMAND_SYSTEM_PROMPT = ON_DEMAND_SYSTEM_PROMPT_TEXT
 
 export const getGeminiSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
     switch (genre) {
@@ -28,6 +31,8 @@ export const getGeminiSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
             return POLITICS_SYSTEM_PROMPT
         case 'SCIENCE':
             return SCIENCE_SYSTEM_PROMPT
+        case 'ON_DEMAND':
+            return ON_DEMAND_SYSTEM_PROMPT
         default:
             return assertNever(genre)
     }
@@ -42,6 +47,8 @@ export const getGeminiResponseSchema = (genre: Exclude<VideoGenre, 'ALARM'>) => 
             return POLITICS_RESPONSE_SCHEMA
         case 'SCIENCE':
             return SCIENCE_RESPONSE_SCHEMA
+        case 'ON_DEMAND':
+            return ON_DEMAND_RESPONSE_SCHEMA
         default:
             return assertNever(genre)
     }
