@@ -23,10 +23,10 @@ const createOnDemandSummary = (
         ...overrides
     }) as VideoSummary<OnDemandSummaryResults>
 
-test('ON_DEMAND formatter includes video title', () => {
+test('ON_DEMAND formatter does not include video title', () => {
     const message = createOnDemandSummary()
     const result = toOnDemandMarkdown(message)
-    expect(result).toContain('Test Video Title')
+    expect(result).not.toContain('Test Video Title')
 })
 
 test('ON_DEMAND formatter includes the short summary', () => {
