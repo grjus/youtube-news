@@ -13,6 +13,7 @@ import {
     IStateMachine,
     JsonPath,
     LogLevel,
+    Pass,
     StateMachine,
     TaskInput
 } from 'aws-cdk-lib/aws-stepfunctions'
@@ -60,21 +61,6 @@ export class UserSummaryRequestFlow extends Construct {
     ) {
         super(scope, id)
 
-        const videoDetailsFetcherFunction = lambdaFactory(this, {
-            id: 'VideoDetailsFetcher',
-            removalPolicy,
-            retention: logRetention,
-            entry: join('src', 'lambdas', 'video-details-fetcher.ts'),
-            handler: 'handler',
-            environment: {
-                SECRET_NAME: secret.secretName
-            },
-            layers: [axiosLayerDef.layer],
-            timeoutSeconds: 30,
-            externalModules: [awsSdkModuleName, axiosLayerDef.moduleName]
-        })
-        secret.grantRead(videoDetailsFetcherFunction)
-
         const userSummarySenderFunction = lambdaFactory(this, {
             id: 'UserSummarySender',
             removalPolicy,
@@ -90,9 +76,19 @@ export class UserSummaryRequestFlow extends Construct {
         })
         secret.grantRead(userSummarySenderFunction)
 
-        const videoDetailsFetcherStep = new LambdaInvoke(this, 'Fetch Video Details', {
-            lambdaFunction: videoDetailsFetcherFunction,
-            outputPath: '$.Payload'
+        const prepareInputStep = new Pass(this, 'Prepare On-Demand Input', {
+            parameters: {
+                'videoId.$': '$.videoId',
+                'chatId.$': '$.chatId',
+                genre: 'ON_DEMAND',
+                captions: 'AUTO_GENERATED',
+                videoType: 'STANDARD',
+                'videoTitle.$': '$.videoId',
+                'channelId.$': '$.videoId',
+                channelTitle: 'on-demand',
+                channelUri: 'https://youtube.com',
+                publishedAt: 0
+            }
         })
 
         const videoPythonTranscriptionStep = new LambdaInvoke(this, 'Python: Transcriptions', {
@@ -115,7 +111,6 @@ export class UserSummaryRequestFlow extends Construct {
             lambdaFunction: userSummarySenderFunction,
             payload: TaskInput.fromObject({
                 chatId: JsonPath.stringAt('$.chatId'),
-                genre: JsonPath.stringAt('$.summaryResult.Payload.genre'),
                 message: JsonPath.stringAt('$.summaryResult.Payload.message')
             }),
             outputPath: '$.Payload'
@@ -154,11 +149,7 @@ export class UserSummaryRequestFlow extends Construct {
                 .afterwards()
         )
 
-        const chain = Chain.start(videoDetailsFetcherStep).next(
-            new Choice(this, 'Video details available?')
-                .when(Condition.isPresent(`$.${ERROR_OUTPUT_ATTR_KEY}`), onTranscriptError)
-                .otherwise(transcriptionFlow)
-        )
+        const chain = Chain.start(prepareInputStep).next(transcriptionFlow)
 
         this.stateMachine = new StateMachine(this, 'UserSummaryStateMachine', {
             stateMachineName: `${stackName}-UserSummaryStateMachine`,

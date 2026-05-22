@@ -6,7 +6,6 @@ const secretName = process.env.SECRET_NAME!
 
 export type UserSummaryMessagePayload = Readonly<{
     chatId: string
-    genre: 'ON_DEMAND'
     message: string
 }>
 

@@ -108,9 +108,8 @@ export const toOnDemandMarkdown = (message: VideoSummary<OnDemandSummaryResults>
     const { shortSummary, summary } = message.summary
     const url = `https://youtu.be/${message.videoId}`
 
-    const header = `<b>&#127916; ${message.videoTitle}</b>\n\n<b>TL;DR</b>\n${shortSummary}\n\n<b>&#128204; Key Takeaways</b>\n`
-    const footer = `\n${url}`
-    const budget = TELEGRAM_MAX_LENGTH - header.length - footer.length
+    const header = `${url}\n\n${shortSummary}\n\n`
+    const budget = TELEGRAM_MAX_LENGTH - header.length
 
     const bulletLines: string[] = []
     let used = 0
@@ -121,7 +120,7 @@ export const toOnDemandMarkdown = (message: VideoSummary<OnDemandSummaryResults>
         used += line.length
     }
 
-    return `${header}${bulletLines.join('')}${footer}`
+    return `${header}${bulletLines.join('')}`.trim()
 }
 
 export const toChatMessageMarkdown = (message: VideoSummary<AcceptableLlmResponse>) => {
