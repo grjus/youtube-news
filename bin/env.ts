@@ -64,7 +64,7 @@ export const env = (): Record<string, BaseConfig> => ({
         secretParams: {
             name: 'youtube-news/prod'
         },
-        allowedChatIds: []
+        allowedChatIds: ['-5185363411']
     } satisfies BaseConfig,
     [TEST_STACK_NAME]: {
         logRetention: RetentionDays.ONE_WEEK,
