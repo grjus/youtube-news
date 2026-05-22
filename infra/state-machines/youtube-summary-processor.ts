@@ -2,6 +2,7 @@ import { Construct } from 'constructs'
 import { ITableV2 } from 'aws-cdk-lib/aws-dynamodb'
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Duration, RemovalPolicy } from 'aws-cdk-lib'
+import { IFunction } from 'aws-cdk-lib/aws-lambda'
 import { LayerDefinition } from '../../src/domain/main-types'
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks'
 import {
@@ -34,6 +35,9 @@ export type YoutubeVideoProcessorFlowProps = Readonly<{
 
 export class YoutubeVideoProcessorFlow extends Construct {
     stateMachine: IStateMachine
+    readonly transcriptionFunction: IFunction
+    readonly pythonTranscriptionFunction: IFunction
+    readonly transcriptSummaryFunction: IFunction
 
     constructor(
         scope: Construct,
@@ -62,6 +66,10 @@ export class YoutubeVideoProcessorFlow extends Construct {
                 geminiLayerDefinition: geminiLayerDef,
                 llmParams
             })
+
+        this.transcriptionFunction = transcriptionFunction
+        this.pythonTranscriptionFunction = pythonTranscriptionFunction
+        this.transcriptSummaryFunction = transcriptSummaryFunction
 
         const videoPythonTranscriptionStep = new LambdaInvoke(this, 'Python: Transcriptions', {
             lambdaFunction: pythonTranscriptionFunction,

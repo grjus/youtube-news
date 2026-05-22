@@ -1,6 +1,7 @@
 import { ContentBlock, SystemContentBlock } from '@aws-sdk/client-bedrock-runtime'
 import {
     getPrompt,
+    ON_DEMAND_SYSTEM_PROMPT_TEXT,
     POLITICS_SYSTEM_PROMPT_TEXT,
     SCIENCE_SYSTEM_PROMPT_TEXT,
     SOFTWARE_ENGINEERING_SYSTEM_PROMPT_TEXT,
@@ -11,7 +12,8 @@ import {
     politicsSummaryToolConfiguration,
     scienceSummaryToolConfiguration,
     softwareEngineeringSummaryToolConfiguration,
-    tinfoilSummaryToolConfiguration
+    tinfoilSummaryToolConfiguration,
+    onDemandSummaryToolConfiguration
 } from './tool-configuration'
 import { assertNever } from '../../lambda-utils'
 
@@ -55,6 +57,16 @@ ${SCIENCE_SYSTEM_PROMPT_TEXT}
     }
 ]
 
+export const ON_DEMAND_BEDROCK_SYSTEM_PROMPT: SystemContentBlock[] = [
+    {
+        text: `
+<content>
+${ON_DEMAND_SYSTEM_PROMPT_TEXT}
+</content>
+`
+    }
+]
+
 export const getSummaryPromptContentBlock = (
     genre: Exclude<VideoGenre, 'ALARM'>,
     transcription: string
@@ -81,6 +93,8 @@ export const getBedrockToolConfiguration = (genre: Exclude<VideoGenre, 'ALARM'>)
             return politicsSummaryToolConfiguration
         case 'SCIENCE':
             return scienceSummaryToolConfiguration
+        case 'ON_DEMAND':
+            return onDemandSummaryToolConfiguration
         default:
             return assertNever(genre)
     }
@@ -96,6 +110,8 @@ export const getBedrockSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
             return POLITICS_BEDROCK_SYSTEM_PROMPT
         case 'SCIENCE':
             return SCIENCE_BEDROCK_SYSTEM_PROMPT
+        case 'ON_DEMAND':
+            return ON_DEMAND_BEDROCK_SYSTEM_PROMPT
         default:
             return assertNever(genre)
     }

@@ -42,6 +42,11 @@ export const env = (): Record<string, BaseConfig> => ({
                     temperature: 0.1,
                     maxTokens: 4096,
                     topP: 0.9
+                },
+                ON_DEMAND: {
+                    temperature: 0.3,
+                    maxTokens: 2048,
+                    topP: 0.9
                 }
             }
         },
@@ -93,6 +98,11 @@ export const env = (): Record<string, BaseConfig> => ({
                 SCIENCE: {
                     temperature: 0.1,
                     maxTokens: 4096,
+                    topP: 0.9
+                },
+                ON_DEMAND: {
+                    temperature: 0.3,
+                    maxTokens: 2048,
                     topP: 0.9
                 }
             }
