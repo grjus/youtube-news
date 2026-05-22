@@ -30,10 +30,10 @@ describe('telegram-url-receiver', () => {
     })
 
     describe('when ALLOWED_CHAT_IDS is set', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             process.env.ALLOWED_CHAT_IDS = '-100111,-100222'
             process.env.STATE_MACHINE_ARN = 'arn:aws:states:eu-west-1:123:stateMachine:test'
-            handler = require('../../src/lambdas/telegram-url-receiver').handler
+            handler = (await import('../../src/lambdas/telegram-url-receiver')).handler
         })
 
         afterEach(() => {
@@ -69,10 +69,10 @@ describe('telegram-url-receiver', () => {
     })
 
     describe('when ALLOWED_CHAT_IDS is empty', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             process.env.ALLOWED_CHAT_IDS = ''
             process.env.STATE_MACHINE_ARN = 'arn:aws:states:eu-west-1:123:stateMachine:test'
-            handler = require('../../src/lambdas/telegram-url-receiver').handler
+            handler = (await import('../../src/lambdas/telegram-url-receiver')).handler
         })
 
         afterEach(() => {
@@ -89,10 +89,10 @@ describe('telegram-url-receiver', () => {
     })
 
     describe('when ALLOWED_CHAT_IDS is not set', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             delete process.env.ALLOWED_CHAT_IDS
             process.env.STATE_MACHINE_ARN = 'arn:aws:states:eu-west-1:123:stateMachine:test'
-            handler = require('../../src/lambdas/telegram-url-receiver').handler
+            handler = (await import('../../src/lambdas/telegram-url-receiver')).handler
         })
 
         afterEach(() => {
@@ -108,10 +108,10 @@ describe('telegram-url-receiver', () => {
     })
 
     describe('edge cases', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             process.env.ALLOWED_CHAT_IDS = '-100111'
             process.env.STATE_MACHINE_ARN = 'arn:aws:states:eu-west-1:123:stateMachine:test'
-            handler = require('../../src/lambdas/telegram-url-receiver').handler
+            handler = (await import('../../src/lambdas/telegram-url-receiver')).handler
         })
 
         afterEach(() => {
