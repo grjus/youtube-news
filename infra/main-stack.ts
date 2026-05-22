@@ -27,7 +27,7 @@ export class MainStack extends Stack {
     constructor(
         scope: Construct,
         id: string,
-        { mainDynamoDbParams, llmParams, logRetention, removalPolicy, layers, secretParams }: StackProps & EnvConfig
+        { mainDynamoDbParams, llmParams, logRetention, removalPolicy, layers, secretParams, allowedChatIds }: StackProps & EnvConfig
     ) {
         super(scope, id)
 
@@ -132,6 +132,7 @@ export class MainStack extends Stack {
             secret,
             llmParams,
             stackName: this.stackName,
+            allowedChatIds,
             transcriptionFunction,
             pythonTranscriptionFunction,
             transcriptSummaryFunction
@@ -237,7 +238,8 @@ export class MainStack extends Stack {
             entry: join('src', 'lambdas', 'telegram-url-receiver.ts'),
             handler: 'handler',
             environment: {
-                STATE_MACHINE_ARN: userSummaryStateMachine.stateMachineArn
+                STATE_MACHINE_ARN: userSummaryStateMachine.stateMachineArn,
+                ALLOWED_CHAT_IDS: allowedChatIds.join(',')
             },
             externalModules: [awsSdkModuleName]
         })

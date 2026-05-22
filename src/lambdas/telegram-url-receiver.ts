@@ -3,6 +3,12 @@ import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
 import { extractYoutubeVideoId } from '../domain/video/youtube-url'
 
 const stateMachineArn = process.env.STATE_MACHINE_ARN!
+const allowedChatIds = new Set(
+    (process.env.ALLOWED_CHAT_IDS ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
+)
 
 const sfnClient = new SFNClient()
 
@@ -37,13 +43,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return OK
     }
 
+    const chatId = String(telegramMessage.chat.id)
+
+    if (allowedChatIds.size > 0 && !allowedChatIds.has(chatId)) {
+        console.warn(`Ignoring message from unauthorised chat: ${chatId}`)
+        return OK
+    }
+
     const videoId = extractYoutubeVideoId(telegramMessage.text)
     if (!videoId) {
         console.log('No YouTube URL found in message')
         return OK
     }
-
-    const chatId = String(telegramMessage.chat.id)
 
     try {
         const execution = await sfnClient.send(

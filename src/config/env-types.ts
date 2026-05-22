@@ -21,6 +21,7 @@ export type EnvConfig = Readonly<{
     llmParams: LLMParams
     layers: LambdaLayers
     secretParams: NameVal
+    allowedChatIds: string[]
 }>
 
 type DynamoDbParams = {

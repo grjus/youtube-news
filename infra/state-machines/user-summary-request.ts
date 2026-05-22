@@ -37,6 +37,7 @@ export type UserSummaryRequestFlowProps = Readonly<{
     transcriptionFunction: IFunction
     pythonTranscriptionFunction: IFunction
     transcriptSummaryFunction: IFunction
+    allowedChatIds: string[]
 }>
 
 export class UserSummaryRequestFlow extends Construct {
