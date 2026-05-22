@@ -93,13 +93,9 @@ export class YoutubeVideoProcessorFlow extends Construct {
             outputPath: '$.Payload'
         })
 
-        const { onSummaryError, onTranscriptError, onChatError, success } = new YoutubeAlarms(
-            this,
-            'YoutubeAlarms',
-            {
-                alarmTopic
-            }
-        )
+        const { onSummaryError, onTranscriptError, onChatError, success } = new YoutubeAlarms(this, 'YoutubeAlarms', {
+            alarmTopic
+        })
 
         const onNotProcessed = new SnsPublish(this, 'Alarm: Not Processed Video', {
             topic: alarmTopic,
