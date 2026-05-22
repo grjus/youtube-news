@@ -12,7 +12,6 @@ export class YoutubeAlarms extends Construct {
     readonly success: Succeed
     readonly onTranscriptError: Chain
     readonly onSummaryError: Chain
-    readonly onNotProcessed: Chain
     readonly onChatError: Chain
 
     constructor(scope: Construct, id: string, { alarmTopic }: YoutubeAlarmsProps) {
@@ -32,12 +31,6 @@ export class YoutubeAlarms extends Construct {
             subject: 'Error processing youtube summary',
             message: TaskInput.fromJsonPathAt('$')
         }).next(this.fail)
-
-        this.onNotProcessed = new SnsPublish(this, 'Alarm: Not Processed Video', {
-            topic: alarmTopic,
-            subject: 'Youtube video not processed',
-            message: TaskInput.fromJsonPathAt('$')
-        }).next(this.success)
 
         this.onChatError = new SnsPublish(this, 'Alarm: Chat Send', {
             topic: alarmTopic,
