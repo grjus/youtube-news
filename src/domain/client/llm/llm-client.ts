@@ -6,6 +6,15 @@ import { getSecretValue } from '../../../clients/aws/secrets-manager-client'
 import { GoogleGenAI } from 'gemini-client'
 import { getPrompt } from './prompts'
 import { getGeminiResponseSchema, getGeminiSystemPrompt } from './gemini/prompt'
+import { jsonrepair } from 'jsonrepair'
+
+const parseJson = (text: string): AcceptableLlmResponse => {
+    try {
+        return JSON.parse(text)
+    } catch {
+        return JSON.parse(jsonrepair(text))
+    }
+}
 
 export const invokeBedrockModel = async (
     genre: Exclude<VideoGenre, 'ALARM'>,
@@ -88,7 +97,7 @@ export const invokeGeminiModel = async (
         if (!response.text) {
             return null
         }
-        return JSON.parse(response.text) as AcceptableLlmResponse
+        return parseJson(response.text)
     } catch (error) {
         console.log(`Error getting response from Gemini: ${error}`)
         return null
