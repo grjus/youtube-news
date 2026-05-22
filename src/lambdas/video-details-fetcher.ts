@@ -50,7 +50,12 @@ export const handler = async (payload: VideoDetailsFetcherInput): Promise<VideoD
             sendAt: now
         } satisfies VideoDetailsFetcherOutput
     } catch (error) {
-        console.error('Video details fetcher failed', error)
+        const axiosError = error as { response?: { data?: unknown; status?: number } }
+        console.error('Video details fetcher failed', {
+            message: error instanceof Error ? error.message : String(error),
+            status: axiosError.response?.status,
+            data: axiosError.response?.data
+        })
         return {
             error: `Failed to fetch video details for videoId: ${videoId}`,
             payload: { videoId, chatId },
