@@ -6,7 +6,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc -w",
+    "watch": "tsc -w --noEmit",
     "lint": "eslint",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "format:check": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|json)\"",
@@ -29,7 +29,7 @@
     "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
     "@typescript-eslint/parser": "^8.43.0",
-    "aws-cdk": "2.1029.1",
+    "aws-cdk": "^2.1124.1",
     "aws-cdk-lib": "^2.214.0",
     "aws-lambda": "^1.0.7",
     "axios": "^1.12.1",
