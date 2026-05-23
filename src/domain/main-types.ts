@@ -155,12 +155,17 @@ export type OnDemandSummaryResults = Readonly<{
     shortSummary: string
 }>
 
+export type CustomInstructionResult = Readonly<{
+    text: string
+}>
+
 export type AcceptableLlmResponse =
     | TinfoilSummaryResults
     | SoftwareEngineeringSummaryResults
     | PoliticsSummaryResults
     | ScienceSummaryResults
     | OnDemandSummaryResults
+    | CustomInstructionResult
 
 export type TranscriptVideo = Readonly<{
     id: string

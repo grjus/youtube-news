@@ -1,5 +1,6 @@
 import {
     AcceptableLlmResponse,
+    CustomInstructionResult,
     OnDemandSummaryResults,
     PoliticsSummaryResults,
     ScienceSummaryResults,
@@ -104,8 +105,12 @@ https://youtu.be/${message.videoId}
 
 const TELEGRAM_MAX_LENGTH = 4096
 
-export const toOnDemandMarkdown = (message: VideoSummary<OnDemandSummaryResults>): string => {
-    const { shortSummary, summary } = message.summary
+export const toOnDemandMarkdown = (message: VideoSummary<OnDemandSummaryResults | CustomInstructionResult>): string => {
+    if ('text' in message.summary) {
+        return message.summary.text
+    }
+
+    const { shortSummary, summary } = message.summary as OnDemandSummaryResults
 
     const header = `${shortSummary}\n\n`
     const budget = TELEGRAM_MAX_LENGTH - header.length
@@ -133,7 +138,7 @@ export const toChatMessageMarkdown = (message: VideoSummary<AcceptableLlmRespons
         case 'SCIENCE':
             return toScienceMarkdown(message as VideoSummary<ScienceSummaryResults>)
         case 'ON_DEMAND':
-            return toOnDemandMarkdown(message as VideoSummary<OnDemandSummaryResults>)
+            return toOnDemandMarkdown(message as VideoSummary<OnDemandSummaryResults | CustomInstructionResult>)
         default:
             return assertNever(message.genre)
     }

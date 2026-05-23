@@ -27,9 +27,10 @@ export const invokeBedrockModel = async (
     })
 
     const userRole = 'user'
+    const isCustomInstruction = genre === 'ON_DEMAND' && !!instruction?.trim()
 
     const systemPrompt = getBedrockSystemPrompt(genre, instruction)
-    const toolConfiguration = getBedrockToolConfiguration(genre)
+    const toolConfiguration = isCustomInstruction ? undefined : getBedrockToolConfiguration(genre)
     const userPrompt = getSummaryPromptContentBlock(genre, transcription, instruction)
 
     try {
@@ -53,6 +54,20 @@ export const invokeBedrockModel = async (
                 }
             })
         )
+
+        if (isCustomInstruction) {
+            const text = bedrockResponse?.output?.message?.content?.[0]?.text
+            if (text) {
+                console.info('Bedrock custom instruction response:', text)
+                return { text } as AcceptableLlmResponse
+            }
+            console.error(
+                'Invalid bedrock custom instruction response:',
+                JSON.stringify(bedrockResponse?.output?.message?.content, null, 2)
+            )
+            return null
+        }
+
         const response = bedrockResponse?.output?.message?.content?.find(
             (content) => content.toolUse?.name === toolConfiguration?.toolChoice?.tool?.name
         )?.toolUse?.input as AcceptableLlmResponse
@@ -77,9 +92,9 @@ export const invokeGeminiModel = async (
     instruction?: string
 ) => {
     try {
+        const isCustomInstruction = genre === 'ON_DEMAND' && !!instruction?.trim()
         const userPrompt = getPrompt(genre, transcription, instruction)
         const systemPrompt = getGeminiSystemPrompt(genre, instruction)
-        const responseSchema = getGeminiResponseSchema(genre)
         const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
         const secret = await getSecretValue(secretName)
         const ai = new GoogleGenAI({ apiKey: secret?.GEMINI_API_KEY })
@@ -91,13 +106,20 @@ export const invokeGeminiModel = async (
                 topP,
                 maxOutputTokens: maxTokens,
                 systemInstruction: systemPrompt,
-                responseMimeType: 'application/json',
-                responseSchema: responseSchema
+                ...(isCustomInstruction
+                    ? {}
+                    : {
+                          responseMimeType: 'application/json',
+                          responseSchema: getGeminiResponseSchema(genre)
+                      })
             }
         })
 
         if (!response.text) {
             return null
+        }
+        if (isCustomInstruction) {
+            return { text: response.text } as AcceptableLlmResponse
         }
         return parseJson(response.text)
     } catch (error) {
