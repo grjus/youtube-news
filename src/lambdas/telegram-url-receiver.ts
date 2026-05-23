@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn'
-import { extractYoutubeVideoId } from '../domain/video/youtube-url'
+import { extractInstruction, extractYoutubeVideoId } from '../domain/video/youtube-url'
 
 const stateMachineArn = process.env.STATE_MACHINE_ARN!
 const allowedChatIds = new Set(
@@ -58,13 +58,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return OK
     }
 
+    const instruction = extractInstruction(telegramMessage.text)
     const messageId = telegramMessage.message_id
 
     try {
         const execution = await sfnClient.send(
             new StartExecutionCommand({
                 stateMachineArn,
-                input: JSON.stringify({ chatId, videoId, messageId })
+                input: JSON.stringify({ chatId, videoId, messageId, instruction })
             })
         )
         console.log(`Started execution: ${execution.executionArn}`)

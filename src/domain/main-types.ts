@@ -173,6 +173,7 @@ export type TranscriptVideo = Readonly<{
     channelUri: string
     publishedAt: number
     transcript: string
+    instruction?: string
 }> &
     Message
 

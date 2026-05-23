@@ -48,6 +48,27 @@ describe('telegram-url-receiver', () => {
             expect(mockSend).toHaveBeenCalledTimes(1)
         })
 
+        test('passes empty instruction when message contains only a URL', async () => {
+            mockSend.mockResolvedValue({ executionArn: 'arn:exec:5' })
+            await handler(makeEvent(messageUpdate(-100111, youtubeUrl)))
+            const input = JSON.parse(mockSend.mock.calls[0][0].input)
+            expect(input.instruction).toBe('')
+        })
+
+        test('passes instruction text that follows the URL', async () => {
+            mockSend.mockResolvedValue({ executionArn: 'arn:exec:6' })
+            await handler(makeEvent(messageUpdate(-100111, `${youtubeUrl} focus on AI topics`)))
+            const input = JSON.parse(mockSend.mock.calls[0][0].input)
+            expect(input.instruction).toBe('focus on AI topics')
+        })
+
+        test('passes instruction text that precedes the URL', async () => {
+            mockSend.mockResolvedValue({ executionArn: 'arn:exec:7' })
+            await handler(makeEvent(messageUpdate(-100111, `summarize in Polish ${youtubeUrl}`)))
+            const input = JSON.parse(mockSend.mock.calls[0][0].input)
+            expect(input.instruction).toBe('summarize in Polish')
+        })
+
         test('ignores a message from an unauthorised chat without starting execution', async () => {
             const result = await handler(makeEvent(messageUpdate(-100999, youtubeUrl)))
             expect(result.statusCode).toBe(200)

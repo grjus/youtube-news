@@ -81,6 +81,7 @@ export class UserSummaryRequestFlow extends Construct {
                 'videoId.$': '$.videoId',
                 'chatId.$': '$.chatId',
                 'messageId.$': '$.messageId',
+                'instruction.$': '$.instruction',
                 genre: 'ON_DEMAND',
                 captions: 'AUTO_GENERATED',
                 videoType: 'STANDARD',
@@ -108,6 +109,23 @@ export class UserSummaryRequestFlow extends Construct {
             resultPath: '$.summaryResult'
         })
 
+        const wrapInstructionStep = new Pass(this, 'Wrap Instruction', {
+            parameters: {
+                'instruction.$': '$.instruction'
+            },
+            resultPath: '$.instructionWrapper'
+        })
+
+        const injectInstructionStep = new Pass(this, 'Inject Instruction Into Payload', {
+            parameters: {
+                'Payload.$': JsonPath.jsonMerge(
+                    JsonPath.objectAt('$.transcriptResult.Payload'),
+                    JsonPath.objectAt('$.instructionWrapper')
+                )
+            },
+            resultPath: '$.transcriptResult'
+        })
+
         const userSummarySenderStep = new LambdaInvoke(this, 'Send Summary to User', {
             lambdaFunction: userSummarySenderFunction,
             payload: TaskInput.fromObject({
@@ -124,7 +142,9 @@ export class UserSummaryRequestFlow extends Construct {
             { alarmTopic }
         )
 
-        const summaryAndSendFlow = Chain.start(transcriptSummarizationStep)
+        const summaryAndSendFlow = Chain.start(wrapInstructionStep)
+            .next(injectInstructionStep)
+            .next(transcriptSummarizationStep)
             .next(
                 new Choice(this, 'Transcript summary available?')
                     .when(Condition.isPresent(`$.summaryResult.Payload.${ERROR_OUTPUT_ATTR_KEY}`), onSummaryError)

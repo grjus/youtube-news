@@ -82,9 +82,11 @@ Respond in the same language as the transcript.
 *Respond ONLY with valid JSON. Do not wrap in Markdown code blocks or add explanations.*
 `
 
-const getOnDemandSummaryPrompt = (transcription: string): string => {
+const getOnDemandSummaryPrompt = (transcription: string, instruction?: string): string => {
+    const task =
+        instruction?.trim() || 'Write the summary of the following transcript. Use the same language as the transcript.'
     return `
-Write the summary of the following transcript. Use the same language as the transcript.
+${task}
 <transcript>
 ${transcription}
 </transcript>
@@ -135,7 +137,7 @@ ${transcription}
 `
 }
 
-export const getPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, transcription: string) => {
+export const getPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, transcription: string, instruction?: string) => {
     switch (genre) {
         case 'TINFOIL':
             return getTinfoilSummaryPrompt(transcription)
@@ -146,7 +148,7 @@ export const getPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, transcription: st
         case 'SCIENCE':
             return getScienceSummaryPrompt(transcription)
         case 'ON_DEMAND':
-            return getOnDemandSummaryPrompt(transcription)
+            return getOnDemandSummaryPrompt(transcription, instruction)
         default:
             return assertNever(genre)
     }
