@@ -81,6 +81,7 @@ export class UserSummaryRequestFlow extends Construct {
                 'videoId.$': '$.videoId',
                 'chatId.$': '$.chatId',
                 'messageId.$': '$.messageId',
+                'instruction.$': '$.instruction',
                 genre: 'ON_DEMAND',
                 captions: 'AUTO_GENERATED',
                 videoType: 'STANDARD',
@@ -108,6 +109,28 @@ export class UserSummaryRequestFlow extends Construct {
             resultPath: '$.summaryResult'
         })
 
+        const injectInstructionStep = new Pass(this, 'Inject Instruction Into Payload', {
+            parameters: {
+                Payload: {
+                    'id.$': '$.transcriptResult.Payload.id',
+                    'type.$': '$.transcriptResult.Payload.type',
+                    'channelId.$': '$.transcriptResult.Payload.channelId',
+                    'videoType.$': '$.transcriptResult.Payload.videoType',
+                    'genre.$': '$.transcriptResult.Payload.genre',
+                    'videoId.$': '$.transcriptResult.Payload.videoId',
+                    'videoTitle.$': '$.transcriptResult.Payload.videoTitle',
+                    'channelTitle.$': '$.transcriptResult.Payload.channelTitle',
+                    'channelUri.$': '$.transcriptResult.Payload.channelUri',
+                    'publishedAt.$': '$.transcriptResult.Payload.publishedAt',
+                    'transcript.$': '$.transcriptResult.Payload.transcript',
+                    'createdAt.$': '$.transcriptResult.Payload.createdAt',
+                    'sendAt.$': '$.transcriptResult.Payload.sendAt',
+                    'instruction.$': '$.instruction'
+                }
+            },
+            resultPath: '$.transcriptResult'
+        })
+
         const userSummarySenderStep = new LambdaInvoke(this, 'Send Summary to User', {
             lambdaFunction: userSummarySenderFunction,
             payload: TaskInput.fromObject({
@@ -124,7 +147,8 @@ export class UserSummaryRequestFlow extends Construct {
             { alarmTopic }
         )
 
-        const summaryAndSendFlow = Chain.start(transcriptSummarizationStep)
+        const summaryAndSendFlow = Chain.start(injectInstructionStep)
+            .next(transcriptSummarizationStep)
             .next(
                 new Choice(this, 'Transcript summary available?')
                     .when(Condition.isPresent(`$.summaryResult.Payload.${ERROR_OUTPUT_ATTR_KEY}`), onSummaryError)

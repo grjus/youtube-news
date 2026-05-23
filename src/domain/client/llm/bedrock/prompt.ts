@@ -69,9 +69,10 @@ ${ON_DEMAND_SYSTEM_PROMPT_TEXT}
 
 export const getSummaryPromptContentBlock = (
     genre: Exclude<VideoGenre, 'ALARM'>,
-    transcription: string
+    transcription: string,
+    instruction?: string
 ): ContentBlock[] => {
-    const prompt = getPrompt(genre, transcription)
+    const prompt = getPrompt(genre, transcription, instruction)
 
     return [
         {

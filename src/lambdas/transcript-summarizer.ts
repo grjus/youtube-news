@@ -23,11 +23,17 @@ export const handler = async (payload: TranscriptVideo) => {
     try {
         let llmResponse: AcceptableLlmResponse | null
         let modelUsed: string
-        llmResponse = await invokeGeminiModel(payload.genre, payload.transcript, llmParams, secretName)
+        llmResponse = await invokeGeminiModel(
+            payload.genre,
+            payload.transcript,
+            llmParams,
+            secretName,
+            payload.instruction
+        )
         if (llmResponse) {
             modelUsed = llmParams.geminiProps.modelId
         } else {
-            llmResponse = await invokeBedrockModel(payload.genre, payload.transcript, llmParams)
+            llmResponse = await invokeBedrockModel(payload.genre, payload.transcript, llmParams, payload.instruction)
             modelUsed = llmParams.bedrockProps.modelId
         }
         console.info(`Summary model used: ${modelUsed} for video: ${payload.videoId}`)

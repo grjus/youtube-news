@@ -19,7 +19,8 @@ const parseJson = (text: string): AcceptableLlmResponse => {
 export const invokeBedrockModel = async (
     genre: Exclude<VideoGenre, 'ALARM'>,
     transcription: string,
-    llmParams: LLMParams
+    llmParams: LLMParams,
+    instruction?: string
 ) => {
     const bedrockClient = new BedrockRuntimeClient({
         region: llmParams.bedrockProps.region
@@ -29,7 +30,7 @@ export const invokeBedrockModel = async (
 
     const systemPrompt = getBedrockSystemPrompt(genre)
     const toolConfiguration = getBedrockToolConfiguration(genre)
-    const userPrompt = getSummaryPromptContentBlock(genre, transcription)
+    const userPrompt = getSummaryPromptContentBlock(genre, transcription, instruction)
 
     try {
         console.info(`Invoking bedrock with prompt:${JSON.stringify(userPrompt, null, 2)}`)
@@ -72,10 +73,11 @@ export const invokeGeminiModel = async (
     genre: Exclude<VideoGenre, 'ALARM'>,
     transcription: string,
     llmParams: LLMParams,
-    secretName: string
+    secretName: string,
+    instruction?: string
 ) => {
     try {
-        const userPrompt = getPrompt(genre, transcription)
+        const userPrompt = getPrompt(genre, transcription, instruction)
         const systemPrompt = getGeminiSystemPrompt(genre)
         const responseSchema = getGeminiResponseSchema(genre)
         const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
