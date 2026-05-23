@@ -109,24 +109,19 @@ export class UserSummaryRequestFlow extends Construct {
             resultPath: '$.summaryResult'
         })
 
+        const wrapInstructionStep = new Pass(this, 'Wrap Instruction', {
+            parameters: {
+                'instruction.$': '$.instruction'
+            },
+            resultPath: '$.instructionWrapper'
+        })
+
         const injectInstructionStep = new Pass(this, 'Inject Instruction Into Payload', {
             parameters: {
-                Payload: {
-                    'id.$': '$.transcriptResult.Payload.id',
-                    'type.$': '$.transcriptResult.Payload.type',
-                    'channelId.$': '$.transcriptResult.Payload.channelId',
-                    'videoType.$': '$.transcriptResult.Payload.videoType',
-                    'genre.$': '$.transcriptResult.Payload.genre',
-                    'videoId.$': '$.transcriptResult.Payload.videoId',
-                    'videoTitle.$': '$.transcriptResult.Payload.videoTitle',
-                    'channelTitle.$': '$.transcriptResult.Payload.channelTitle',
-                    'channelUri.$': '$.transcriptResult.Payload.channelUri',
-                    'publishedAt.$': '$.transcriptResult.Payload.publishedAt',
-                    'transcript.$': '$.transcriptResult.Payload.transcript',
-                    'createdAt.$': '$.transcriptResult.Payload.createdAt',
-                    'sendAt.$': '$.transcriptResult.Payload.sendAt',
-                    'instruction.$': '$.instruction'
-                }
+                'Payload.$': JsonPath.jsonMerge(
+                    JsonPath.objectAt('$.transcriptResult.Payload'),
+                    JsonPath.objectAt('$.instructionWrapper')
+                )
             },
             resultPath: '$.transcriptResult'
         })
@@ -147,7 +142,8 @@ export class UserSummaryRequestFlow extends Construct {
             { alarmTopic }
         )
 
-        const summaryAndSendFlow = Chain.start(injectInstructionStep)
+        const summaryAndSendFlow = Chain.start(wrapInstructionStep)
+            .next(injectInstructionStep)
             .next(transcriptSummarizationStep)
             .next(
                 new Choice(this, 'Transcript summary available?')
