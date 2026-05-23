@@ -38,7 +38,7 @@ export const invokeBedrockModel = async (
 
     try {
         console.info(`Invoking bedrock with prompt:${JSON.stringify(userPrompt, null, 2)}`)
-        const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
+        const { temperature, maxTokens } = llmParams.inferenceProfile[genre]
         const bedrockResponse = await bedrockClient.send(
             new ConverseCommand({
                 modelId: llmParams.bedrockProps.modelId,
@@ -52,8 +52,7 @@ export const invokeBedrockModel = async (
                 ],
                 inferenceConfig: {
                     temperature,
-                    maxTokens,
-                    topP
+                    maxTokens
                 }
             })
         )
