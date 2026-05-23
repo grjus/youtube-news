@@ -67,6 +67,16 @@ ${ON_DEMAND_SYSTEM_PROMPT_TEXT}
     }
 ]
 
+export const ON_DEMAND_BASE_BEDROCK_SYSTEM_PROMPT: SystemContentBlock[] = [
+    {
+        text: `
+<content>
+You are a helpful assistant.
+</content>
+`
+    }
+]
+
 export const getSummaryPromptContentBlock = (
     genre: Exclude<VideoGenre, 'ALARM'>,
     transcription: string,
@@ -101,7 +111,7 @@ export const getBedrockToolConfiguration = (genre: Exclude<VideoGenre, 'ALARM'>)
     }
 }
 
-export const getBedrockSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
+export const getBedrockSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, instruction?: string) => {
     switch (genre) {
         case 'TINFOIL':
             return TINFOIL_BEDROCK_SYSTEM_PROMPT
@@ -112,7 +122,7 @@ export const getBedrockSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
         case 'SCIENCE':
             return SCIENCE_BEDROCK_SYSTEM_PROMPT
         case 'ON_DEMAND':
-            return ON_DEMAND_BEDROCK_SYSTEM_PROMPT
+            return instruction?.trim() ? ON_DEMAND_BASE_BEDROCK_SYSTEM_PROMPT : ON_DEMAND_BEDROCK_SYSTEM_PROMPT
         default:
             return assertNever(genre)
     }

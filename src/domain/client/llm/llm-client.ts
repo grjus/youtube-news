@@ -28,7 +28,7 @@ export const invokeBedrockModel = async (
 
     const userRole = 'user'
 
-    const systemPrompt = getBedrockSystemPrompt(genre)
+    const systemPrompt = getBedrockSystemPrompt(genre, instruction)
     const toolConfiguration = getBedrockToolConfiguration(genre)
     const userPrompt = getSummaryPromptContentBlock(genre, transcription, instruction)
 
@@ -78,7 +78,7 @@ export const invokeGeminiModel = async (
 ) => {
     try {
         const userPrompt = getPrompt(genre, transcription, instruction)
-        const systemPrompt = getGeminiSystemPrompt(genre)
+        const systemPrompt = getGeminiSystemPrompt(genre, instruction)
         const responseSchema = getGeminiResponseSchema(genre)
         const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
         const secret = await getSecretValue(secretName)

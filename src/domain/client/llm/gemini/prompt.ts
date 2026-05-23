@@ -21,7 +21,7 @@ export const POLITICS_SYSTEM_PROMPT = POLITICS_SYSTEM_PROMPT_TEXT
 export const SCIENCE_SYSTEM_PROMPT = SCIENCE_SYSTEM_PROMPT_TEXT
 export const ON_DEMAND_SYSTEM_PROMPT = ON_DEMAND_SYSTEM_PROMPT_TEXT
 
-export const getGeminiSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
+export const getGeminiSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, instruction?: string) => {
     switch (genre) {
         case 'TINFOIL':
             return TINFOIL_SYSTEM_PROMPT
@@ -32,7 +32,7 @@ export const getGeminiSystemPrompt = (genre: Exclude<VideoGenre, 'ALARM'>) => {
         case 'SCIENCE':
             return SCIENCE_SYSTEM_PROMPT
         case 'ON_DEMAND':
-            return ON_DEMAND_SYSTEM_PROMPT
+            return instruction?.trim() ? 'You are a helpful assistant.' : ON_DEMAND_SYSTEM_PROMPT
         default:
             return assertNever(genre)
     }
