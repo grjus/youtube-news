@@ -118,7 +118,7 @@ export class UserSummaryRequestFlow extends Construct {
 
         const injectInstructionStep = new Pass(this, 'Inject Instruction Into Payload', {
             parameters: {
-                'Payload.$': JsonPath.jsonMerge(
+                Payload: JsonPath.jsonMerge(
                     JsonPath.objectAt('$.transcriptResult.Payload'),
                     JsonPath.objectAt('$.instructionWrapper')
                 )
