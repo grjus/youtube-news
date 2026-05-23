@@ -88,22 +88,5 @@ test('ON_DEMAND formatter returns plain text when summary is a custom instructio
     }
     const result = toOnDemandMarkdown(message)
     expect(result).toBe('This is a free-form answer to the custom instruction.')
-})
-
-test('ON_DEMAND formatter does not add bullet points for custom instruction result', () => {
-    const message: VideoSummary<CustomInstructionResult> = {
-        type: MessageType.SUMMARY,
-        id: '550e8400-e29b-41d4-a716-446655440000' as `${string}-${string}-${string}-${string}-${string}`,
-        videoTitle: 'Test Video Title',
-        videoType: 'STANDARD',
-        genre: 'ON_DEMAND',
-        videoId: 'dQw4w9WgXcQ',
-        channelTitle: 'Test Channel',
-        channelUri: 'https://www.youtube.com/channel/test',
-        createdAt: Date.now(),
-        sendAt: Date.now(),
-        summary: { text: 'Custom answer without bullet points.' }
-    }
-    const result = toOnDemandMarkdown(message)
     expect(result).not.toContain('•')
 })

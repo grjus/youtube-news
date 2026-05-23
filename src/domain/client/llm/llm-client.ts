@@ -16,6 +16,9 @@ const parseJson = (text: string): AcceptableLlmResponse => {
     }
 }
 
+const isCustomInstructionMode = (genre: Exclude<VideoGenre, 'ALARM'>, instruction?: string): boolean =>
+    genre === 'ON_DEMAND' && !!instruction?.trim()
+
 export const invokeBedrockModel = async (
     genre: Exclude<VideoGenre, 'ALARM'>,
     transcription: string,
@@ -27,7 +30,7 @@ export const invokeBedrockModel = async (
     })
 
     const userRole = 'user'
-    const isCustomInstruction = genre === 'ON_DEMAND' && !!instruction?.trim()
+    const isCustomInstruction = isCustomInstructionMode(genre, instruction)
 
     const systemPrompt = getBedrockSystemPrompt(genre, instruction)
     const toolConfiguration = isCustomInstruction ? undefined : getBedrockToolConfiguration(genre)
@@ -92,7 +95,7 @@ export const invokeGeminiModel = async (
     instruction?: string
 ) => {
     try {
-        const isCustomInstruction = genre === 'ON_DEMAND' && !!instruction?.trim()
+        const isCustomInstruction = isCustomInstructionMode(genre, instruction)
         const userPrompt = getPrompt(genre, transcription, instruction)
         const systemPrompt = getGeminiSystemPrompt(genre, instruction)
         const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
