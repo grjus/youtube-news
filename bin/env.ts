@@ -16,10 +16,10 @@ export const env = (): Record<string, BaseConfig> => ({
         removalPolicy: RemovalPolicy.RETAIN,
         llmParams: {
             geminiProps: {
-                modelId: 'gemini-2.5-flash'
+                modelId: 'gemini-3.5-flash'
             },
             bedrockProps: {
-                modelId: 'eu.anthropic.claude-3-7-sonnet-20250219-v1:0',
+                modelId: 'eu.anthropic.claude-sonnet-4-6',
                 region: 'eu-west-1'
             },
             inferenceProfile: {
@@ -68,10 +68,10 @@ export const env = (): Record<string, BaseConfig> => ({
         removalPolicy: RemovalPolicy.DESTROY,
         llmParams: {
             geminiProps: {
-                modelId: 'gemini-2.5-flash'
+                modelId: 'gemini-3.5-flash'
             },
             bedrockProps: {
-                modelId: 'eu.anthropic.claude-3-7-sonnet-20250219-v1:0',
+                modelId: 'eu.anthropic.claude-sonnet-4-6',
                 region: 'eu-west-1'
             },
             inferenceProfile: {

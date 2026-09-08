@@ -25,29 +25,34 @@ const fetchVideoCaptionsType = async (
             ? { captions: 'AUTO_GENERATED' }
             : { captions: 'USER_GENERATED' }
     } catch (error) {
-        console.error('Error fetching video captions type:', error)
+        console.warn(`Error fetching video captions type for ${videoId}, defaulting to AUTO_GENERATED:`, error)
         return { captions: 'AUTO_GENERATED' }
     }
 }
 
 const isMembersOnlyVideo = async (videoId: string): Promise<{ isMembersOnly: boolean }> => {
-    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-    const { data: html } = await get(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-    })
-
-    const m = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\});/s)
-    if (!m) return { isMembersOnly: false }
-
-    let player
     try {
-        player = JSON.parse(m[1])
-    } catch {
+        const url = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
+        const { data: html } = await get(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0' }
+        })
+
+        const m = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\});/s)
+        if (!m) return { isMembersOnly: false }
+
+        let player
+        try {
+            player = JSON.parse(m[1])
+        } catch {
+            return { isMembersOnly: false }
+        }
+
+        const errorScreen = player?.playabilityStatus?.errorScreen?.playerLegacyDesktopYpcOfferRenderer?.offerId
+        return { isMembersOnly: errorScreen === 'sponsors_only_video' }
+    } catch (error) {
+        console.warn(`Failed to check members-only status for ${videoId}, defaulting to false:`, error)
         return { isMembersOnly: false }
     }
-
-    const errorScreen = player?.playabilityStatus?.errorScreen?.playerLegacyDesktopYpcOfferRenderer?.offerId
-    return { isMembersOnly: errorScreen === 'sponsors_only_video' }
 }
 
 const getVideoDetails = async (videoId: string, youtubeApiKey: string): Promise<YoutubeVideoDetails> => {

@@ -111,7 +111,6 @@ export const toChatMessageMarkdown = (message: VideoSummary<AcceptableLlmRespons
             return toPoliticsMarkdown(message as VideoSummary<PoliticsSummaryResults>)
         case 'SCIENCE':
             return toScienceMarkdown(message as VideoSummary<ScienceSummaryResults>)
-
         default:
             return assertNever(message.genre)
     }

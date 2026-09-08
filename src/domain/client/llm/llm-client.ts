@@ -6,6 +6,15 @@ import { getSecretValue } from '../../../clients/aws/secrets-manager-client'
 import { GoogleGenAI } from 'gemini-client'
 import { getPrompt } from './prompts'
 import { getGeminiResponseSchema, getGeminiSystemPrompt } from './gemini/prompt'
+import { jsonrepair } from 'jsonrepair'
+
+const parseJson = (text: string): AcceptableLlmResponse => {
+    try {
+        return JSON.parse(text)
+    } catch {
+        return JSON.parse(jsonrepair(text))
+    }
+}
 
 export const invokeBedrockModel = async (
     genre: Exclude<VideoGenre, 'ALARM'>,
@@ -16,15 +25,13 @@ export const invokeBedrockModel = async (
         region: llmParams.bedrockProps.region
     })
 
-    const userRole = 'user'
-
     const systemPrompt = getBedrockSystemPrompt(genre)
     const toolConfiguration = getBedrockToolConfiguration(genre)
     const userPrompt = getSummaryPromptContentBlock(genre, transcription)
 
     try {
         console.info(`Invoking bedrock with prompt:${JSON.stringify(userPrompt, null, 2)}`)
-        const { temperature, maxTokens, topP } = llmParams.inferenceProfile[genre]
+        const { temperature, maxTokens } = llmParams.inferenceProfile[genre]
         const bedrockResponse = await bedrockClient.send(
             new ConverseCommand({
                 modelId: llmParams.bedrockProps.modelId,
@@ -32,19 +39,19 @@ export const invokeBedrockModel = async (
                 system: systemPrompt,
                 messages: [
                     {
-                        role: userRole,
+                        role: 'user',
                         content: userPrompt
                     }
                 ],
                 inferenceConfig: {
                     temperature,
-                    maxTokens,
-                    topP
+                    maxTokens
                 }
             })
         )
+
         const response = bedrockResponse?.output?.message?.content?.find(
-            (content) => content.toolUse?.name === toolConfiguration?.toolChoice?.tool?.name
+            (content) => content.toolUse?.name === toolConfiguration.toolChoice?.tool?.name
         )?.toolUse?.input as AcceptableLlmResponse
 
         if (response) {
@@ -81,14 +88,14 @@ export const invokeGeminiModel = async (
                 maxOutputTokens: maxTokens,
                 systemInstruction: systemPrompt,
                 responseMimeType: 'application/json',
-                responseSchema: responseSchema
+                responseSchema
             }
         })
 
         if (!response.text) {
             return null
         }
-        return JSON.parse(response.text) as AcceptableLlmResponse
+        return parseJson(response.text)
     } catch (error) {
         console.log(`Error getting response from Gemini: ${error}`)
         return null

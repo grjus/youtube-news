@@ -22,11 +22,15 @@ const dynamoClient = new DynamoDBClient()
 export const handler = async (payload: TranscriptVideo) => {
     try {
         let llmResponse: AcceptableLlmResponse | null
+        let modelUsed: string
         llmResponse = await invokeGeminiModel(payload.genre, payload.transcript, llmParams, secretName)
-        if (!llmResponse) {
-            console.info('Using Bedrock model')
+        if (llmResponse) {
+            modelUsed = llmParams.geminiProps.modelId
+        } else {
             llmResponse = await invokeBedrockModel(payload.genre, payload.transcript, llmParams)
+            modelUsed = llmParams.bedrockProps.modelId
         }
+        console.info(`Summary model used: ${modelUsed} for video: ${payload.videoId}`)
         if (!llmResponse) {
             console.error('LLM response is null or undefined')
             return {

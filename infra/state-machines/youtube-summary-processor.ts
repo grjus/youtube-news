@@ -11,11 +11,13 @@ import {
     DefinitionBody,
     IStateMachine,
     LogLevel,
-    StateMachine
+    StateMachine,
+    TaskInput
 } from 'aws-cdk-lib/aws-stepfunctions'
 import { ITopic } from 'aws-cdk-lib/aws-sns'
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager'
 import { LLMParams } from '../../src/config/env-types'
+import { SnsPublish } from 'aws-cdk-lib/aws-stepfunctions-tasks'
 import { YoutubeContent } from './youtube-content'
 import { YoutubeAlarms } from './youtube-alarms'
 import { ERROR_OUTPUT_ATTR_KEY } from '../../src/domain/consts'
@@ -83,13 +85,15 @@ export class YoutubeVideoProcessorFlow extends Construct {
             outputPath: '$.Payload'
         })
 
-        const { onSummaryError, onNotProcessed, onTranscriptError, onChatError, success } = new YoutubeAlarms(
-            this,
-            'YoutubeAlarms',
-            {
-                alarmTopic
-            }
-        )
+        const { onSummaryError, onTranscriptError, onChatError, success } = new YoutubeAlarms(this, 'YoutubeAlarms', {
+            alarmTopic
+        })
+
+        const onNotProcessed = new SnsPublish(this, 'Alarm: Not Processed Video', {
+            topic: alarmTopic,
+            subject: 'Youtube video not processed',
+            message: TaskInput.fromJsonPathAt('$')
+        }).next(success)
 
         const supadataFallbackFlow = Chain.start(videoSupadataTranscriptionStep).next(
             new Choice(this, 'Supadata:Transcription available?')

@@ -21,8 +21,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install CDK CLI
-        run: npm i -g cdk@2.1124.1
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
 
       - name: Configure AWS Credentials (Diff Role)
         uses: aws-actions/configure-aws-credentials@v4
@@ -31,17 +38,17 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint and Test
         run: |
-          npm run lint || echo "No lint script, skipping"
-          npm run format:check || echo "No format:check script, skipping"
-          npm run build
-          npm run test
+          pnpm lint
+          pnpm format:check
+          pnpm build
+          pnpm test
 
       - name: CDK Diff
-        run: npx cdk diff -c stack=YoutubeNewsStack
+        run: pnpm cdk -- diff -c stack=YoutubeNewsStack
 
   deploy:
     name: Build & CDK Deploy
@@ -51,11 +58,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Verify Secrets
         run: |
@@ -78,14 +89,14 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint and Test
         run: |
-          npm run lint || echo "No lint script, skipping"
-          npm run format:check || echo "No format:check script, skipping"
-          npm run build
-          npm run test
+          pnpm lint
+          pnpm format:check
+          pnpm build
+          pnpm test
 
       - name: CDK Deploy
-        run: npx cdk deploy -c stack=YoutubeNewsStack --require-approval never
+        run: pnpm cdk -- deploy -c stack=YoutubeNewsStack --require-approval never
