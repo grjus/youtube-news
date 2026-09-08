@@ -1,0 +1,74 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/*.d.ts", "!cdk.out", "!.antigravitycli"]
+  },
+  "formatter": {
+    "includes": ["**/*.js", "**/*.ts", "**/*.json"],
+    "indentStyle": "space",
+    "indentWidth": 4,
+    "lineWidth": 120,
+    "bracketSpacing": true
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "none"
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentWidth": 2
+    }
+  },
+  "linter": {
+    "includes": ["**/*.ts"],
+    "rules": {
+      "preset": "none",
+      "correctness": {
+        "noUnusedVariables": "warn"
+      },
+      "complexity": {
+        "noUselessThisAlias": "error",
+        "noUselessTypeConstraint": "error"
+      },
+      "style": {
+        "noCommonJs": "error",
+        "noNamespace": "error",
+        "noRestrictedTypes": {
+          "level": "error",
+          "options": {
+            "types": {
+              "BigInt": { "message": "Use bigint instead.", "use": "bigint" },
+              "Boolean": { "message": "Use boolean instead.", "use": "boolean" },
+              "Function": "Define the function's arguments and return type.",
+              "Number": { "message": "Use number instead.", "use": "number" },
+              "Object": "Use object instead.",
+              "String": { "message": "Use string instead.", "use": "string" },
+              "Symbol": { "message": "Use symbol instead.", "use": "symbol" }
+            }
+          }
+        },
+        "useArrayLiterals": "error",
+        "useAsConstAssertion": "error"
+      },
+      "suspicious": {
+        "noDuplicateEnumValues": "error",
+        "noEmptyInterface": "error",
+        "noExplicitAny": "error",
+        "noExtraNonNullAssertion": "error",
+        "noNonNullAssertedOptionalChain": "error",
+        "noTsIgnore": "error",
+        "noUnsafeDeclarationMerging": "error",
+        "noUnusedExpressions": "error",
+        "useNamespaceKeyword": "error"
+      }
+    }
+  }
+}

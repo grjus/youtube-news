@@ -1,4 +1,7 @@
 allowBuilds:
-    aws-sdk: true
-    esbuild: true
-    unrs-resolver: true
+  '@google/genai': true
+  '@parcel/watcher': true
+  aws-sdk: true
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
