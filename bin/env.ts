@@ -42,11 +42,6 @@ export const env = (): Record<string, BaseConfig> => ({
                     temperature: 0.1,
                     maxTokens: 4096,
                     topP: 0.9
-                },
-                ON_DEMAND: {
-                    temperature: 0.3,
-                    maxTokens: 2048,
-                    topP: 0.9
                 }
             }
         },
@@ -63,8 +58,7 @@ export const env = (): Record<string, BaseConfig> => ({
         },
         secretParams: {
             name: 'youtube-news/prod'
-        },
-        allowedChatIds: ['-5185363411']
+        }
     } satisfies BaseConfig,
     [TEST_STACK_NAME]: {
         logRetention: RetentionDays.ONE_WEEK,
@@ -100,11 +94,6 @@ export const env = (): Record<string, BaseConfig> => ({
                     temperature: 0.1,
                     maxTokens: 4096,
                     topP: 0.9
-                },
-                ON_DEMAND: {
-                    temperature: 0.3,
-                    maxTokens: 2048,
-                    topP: 0.9
                 }
             }
         },
@@ -120,7 +109,6 @@ export const env = (): Record<string, BaseConfig> => ({
         },
         secretParams: {
             name: 'youtube-news/prod'
-        },
-        allowedChatIds: []
+        }
     } satisfies BaseConfig
 })

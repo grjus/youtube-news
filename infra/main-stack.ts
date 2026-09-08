@@ -10,7 +10,6 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm'
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { Queue } from 'aws-cdk-lib/aws-sqs'
 import { YoutubeVideoProcessorFlow } from './state-machines/youtube-summary-processor'
-import { UserSummaryRequestFlow } from './state-machines/user-summary-request'
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { join } from 'path'
@@ -21,21 +20,12 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { YoutubeNewsApi } from './constructs/api/youtube-subscription-api'
 import { YoutubePubSub } from './constructs/youtube-pubsub'
 import { lambdaFactory } from './utils/lambda-factory'
-import { AuthorizationType, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway'
 
 export class MainStack extends Stack {
     constructor(
         scope: Construct,
         id: string,
-        {
-            mainDynamoDbParams,
-            llmParams,
-            logRetention,
-            removalPolicy,
-            layers,
-            secretParams,
-            allowedChatIds
-        }: StackProps & EnvConfig
+        { mainDynamoDbParams, llmParams, logRetention, removalPolicy, layers, secretParams }: StackProps & EnvConfig
     ) {
         super(scope, id)
 
@@ -105,26 +95,7 @@ export class MainStack extends Stack {
 
         const secret = Secret.fromSecretNameV2(this, 'YoutubeNewsSecret', secretParams.name)
 
-        const { stateMachine, transcriptionFunction, pythonTranscriptionFunction, transcriptSummaryFunction } =
-            new YoutubeVideoProcessorFlow(this, 'YoutubeVideoProcessorFlow', {
-                mainTable,
-                logRetention,
-                axiosLayerDef: {
-                    layer: axiosLayer,
-                    moduleName: axiosClientLayerParams.moduleName
-                },
-                geminiLayerDef: {
-                    layer: geminiLayer,
-                    moduleName: geminiClientLayerParams.moduleName
-                },
-                removalPolicy,
-                alarmTopic,
-                secret,
-                llmParams,
-                stackName: this.stackName
-            })
-
-        const { stateMachine: userSummaryStateMachine } = new UserSummaryRequestFlow(this, 'UserSummaryRequestFlow', {
+        const { stateMachine } = new YoutubeVideoProcessorFlow(this, 'YoutubeVideoProcessorFlow', {
             mainTable,
             logRetention,
             axiosLayerDef: {
@@ -139,11 +110,7 @@ export class MainStack extends Stack {
             alarmTopic,
             secret,
             llmParams,
-            stackName: this.stackName,
-            allowedChatIds,
-            transcriptionFunction,
-            pythonTranscriptionFunction,
-            transcriptSummaryFunction
+            stackName: this.stackName
         })
 
         const alarmMessageSenderFunction = new NodejsFunction(this, 'AlarmMessageSenderFunction', {
@@ -185,23 +152,19 @@ export class MainStack extends Stack {
             description: 'Run every full hour'
         })
 
-        const { youtubeNotificationsProcessorFunction, youtubePubSubUrl, api } = new YoutubeNewsApi(
-            this,
-            'YoutubeNewsApi',
-            {
-                domainPrefix: 'youtube-news-api',
-                removalPolicy: removalPolicy,
-                table: mainTable,
-                retention: logRetention,
-                secret,
-                axiosLayerDef: {
-                    layer: axiosLayer,
-                    moduleName: axiosClientLayerParams.moduleName
-                },
-                deadLetterQueue,
-                youtubeNotificationsTopic
-            }
-        )
+        const { youtubeNotificationsProcessorFunction, youtubePubSubUrl } = new YoutubeNewsApi(this, 'YoutubeNewsApi', {
+            domainPrefix: 'youtube-news-api',
+            removalPolicy: removalPolicy,
+            table: mainTable,
+            retention: logRetention,
+            secret,
+            axiosLayerDef: {
+                layer: axiosLayer,
+                moduleName: axiosClientLayerParams.moduleName
+            },
+            deadLetterQueue,
+            youtubeNotificationsTopic
+        })
         const { subscriptionRenewalDispatcher } = new YoutubePubSub(this, 'YoutubePubSub', {
             subscriptionRenewalQueue,
             apiUrl: youtubePubSubUrl,
@@ -238,33 +201,6 @@ export class MainStack extends Stack {
 
         rule.addTarget(new LambdaFunction(subscriptionRenewalDispatcher))
         rule.addTarget(new LambdaFunction(scheduledNotificationPoller))
-
-        const telegramUrlReceiverFunction = lambdaFactory(this, {
-            id: 'TelegramUrlReceiverFunction',
-            removalPolicy,
-            retention: logRetention,
-            entry: join('src', 'lambdas', 'telegram-url-receiver.ts'),
-            handler: 'handler',
-            environment: {
-                STATE_MACHINE_ARN: userSummaryStateMachine.stateMachineArn,
-                ALLOWED_CHAT_IDS: allowedChatIds.join(',')
-            },
-            externalModules: [awsSdkModuleName]
-        })
-        userSummaryStateMachine.grantStartExecution(telegramUrlReceiverFunction)
-
-        const telegramResource = api.root.addResource('telegram')
-        telegramResource.addMethod('POST', new LambdaIntegration(telegramUrlReceiverFunction), {
-            authorizationType: AuthorizationType.NONE,
-            apiKeyRequired: false
-        })
-
-        const telegramWebhookUrl = api.urlForPath('/telegram')
-
-        new CfnOutput(this, 'TelegramWebhookUrl', {
-            value: telegramWebhookUrl,
-            description: 'URL to register as Telegram bot webhook (POST /telegram)'
-        })
 
         new CfnOutput(this, 'MainTableArn', {
             value: mainTable.tableName,

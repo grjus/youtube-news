@@ -23,17 +23,11 @@ export const handler = async (payload: TranscriptVideo) => {
     try {
         let llmResponse: AcceptableLlmResponse | null
         let modelUsed: string
-        llmResponse = await invokeGeminiModel(
-            payload.genre,
-            payload.transcript,
-            llmParams,
-            secretName,
-            payload.instruction
-        )
+        llmResponse = await invokeGeminiModel(payload.genre, payload.transcript, llmParams, secretName)
         if (llmResponse) {
             modelUsed = llmParams.geminiProps.modelId
         } else {
-            llmResponse = await invokeBedrockModel(payload.genre, payload.transcript, llmParams, payload.instruction)
+            llmResponse = await invokeBedrockModel(payload.genre, payload.transcript, llmParams)
             modelUsed = llmParams.bedrockProps.modelId
         }
         console.info(`Summary model used: ${modelUsed} for video: ${payload.videoId}`)
@@ -71,9 +65,7 @@ export const handler = async (payload: TranscriptVideo) => {
         )
 
         const videoSummary = toVideoSummary(videoSummaryEntity)
-        const baseMessage = toChatMessageMarkdown(videoSummary)
-        const message =
-            videoSummary.genre === 'ON_DEMAND' ? `${baseMessage}\n\n<i>model: ${modelUsed}</i>` : baseMessage
+        const message = toChatMessageMarkdown(videoSummary)
         return {
             genre: videoSummary.genre,
             message

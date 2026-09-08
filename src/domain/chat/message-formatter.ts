@@ -1,7 +1,5 @@
 import {
     AcceptableLlmResponse,
-    CustomInstructionResult,
-    OnDemandSummaryResults,
     PoliticsSummaryResults,
     ScienceSummaryResults,
     SoftwareEngineeringSummaryResults,
@@ -103,30 +101,6 @@ https://youtu.be/${message.videoId}
     `
 }
 
-const TELEGRAM_MAX_LENGTH = 4096
-
-export const toOnDemandMarkdown = (message: VideoSummary<OnDemandSummaryResults | CustomInstructionResult>): string => {
-    if ('text' in message.summary) {
-        return message.summary.text
-    }
-
-    const { shortSummary, summary } = message.summary as OnDemandSummaryResults
-
-    const header = `${shortSummary}\n\n`
-    const budget = TELEGRAM_MAX_LENGTH - header.length
-
-    const bulletLines: string[] = []
-    let used = 0
-    for (const point of summary) {
-        const line = `• ${point}\n`
-        if (used + line.length > budget) break
-        bulletLines.push(line)
-        used += line.length
-    }
-
-    return `${header}${bulletLines.join('')}`.trim()
-}
-
 export const toChatMessageMarkdown = (message: VideoSummary<AcceptableLlmResponse>) => {
     switch (message.genre) {
         case 'TINFOIL':
@@ -137,8 +111,6 @@ export const toChatMessageMarkdown = (message: VideoSummary<AcceptableLlmRespons
             return toPoliticsMarkdown(message as VideoSummary<PoliticsSummaryResults>)
         case 'SCIENCE':
             return toScienceMarkdown(message as VideoSummary<ScienceSummaryResults>)
-        case 'ON_DEMAND':
-            return toOnDemandMarkdown(message as VideoSummary<OnDemandSummaryResults | CustomInstructionResult>)
         default:
             return assertNever(message.genre)
     }

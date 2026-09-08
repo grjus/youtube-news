@@ -1,0 +1,7 @@
+allowBuilds:
+  '@google/genai': true
+  '@parcel/watcher': true
+  aws-sdk: true
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
