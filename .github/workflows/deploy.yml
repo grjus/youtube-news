@@ -48,7 +48,7 @@ jobs:
           pnpm test
 
       - name: CDK Diff
-        run: pnpm cdk --diff -c stack=YoutubeNewsStack
+        run: pnpm cdk diff -c stack=YoutubeNewsStack
 
   deploy:
     name: Build & CDK Deploy
@@ -99,4 +99,4 @@ jobs:
           pnpm test
 
       - name: CDK Deploy
-        run: pnpm cdk --deploy -c stack=YoutubeNewsStack --require-approval never
+        run: pnpm cdk deploy -c stack=YoutubeNewsStack --require-approval never
