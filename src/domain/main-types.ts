@@ -150,22 +150,11 @@ export type ScienceSummaryResults = Readonly<{
     complexityLevel: string
 }>
 
-export type OnDemandSummaryResults = Readonly<{
-    summary: string[]
-    shortSummary: string
-}>
-
-export type CustomInstructionResult = Readonly<{
-    text: string
-}>
-
 export type AcceptableLlmResponse =
     | TinfoilSummaryResults
     | SoftwareEngineeringSummaryResults
     | PoliticsSummaryResults
     | ScienceSummaryResults
-    | OnDemandSummaryResults
-    | CustomInstructionResult
 
 export type TranscriptVideo = Readonly<{
     id: string
@@ -178,13 +167,12 @@ export type TranscriptVideo = Readonly<{
     channelUri: string
     publishedAt: number
     transcript: string
-    instruction?: string
 }> &
     Message
 
 export type YoutubeVideoType = 'SHORT' | 'STANDARD' | 'LIVE' | 'UNKNOWN' | 'UPCOMING' | 'LONG'
 
-export type VideoGenre = 'TINFOIL' | 'SOFTWARE_ENGINEERING' | 'ALARM' | 'POLITICS' | 'SCIENCE' | 'ON_DEMAND'
+export type VideoGenre = 'TINFOIL' | 'SOFTWARE_ENGINEERING' | 'ALARM' | 'POLITICS' | 'SCIENCE'
 
 export type ErrorOutput = Readonly<{
     [ERROR_OUTPUT_ATTR_KEY]: string

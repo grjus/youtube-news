@@ -1,6 +1,5 @@
 import { ToolConfiguration, ToolInputSchema, ToolSpecification } from '@aws-sdk/client-bedrock-runtime'
 import {
-    ON_DEMAND_RESPONSE_SCHEMA,
     POLITICS_RESPONSE_SCHEMA,
     SCIENCE_RESPONSE_SCHEMA,
     SOFTWARE_ENGINEERING_RESPONSE_SCHEMA,
@@ -11,7 +10,6 @@ const TINFOIL_SUMMARY_TOOL_NAME = 'tinfoil-summary-tool'
 const SOFTWARE_ENGINEERING_SUMMARY_TOOL_NAME = 'software-engineering-summary-tool'
 const POLITICS_SUMMARY_TOOL_NAME = 'politics-summary-tool'
 const SCIENCE_SUMMARY_TOOL_NAME = 'science-summary-tool'
-const ON_DEMAND_SUMMARY_TOOL_NAME = 'on-demand-summary-tool'
 
 export const TINFOIL_SUMMARY_SPEC: ToolSpecification = {
     name: TINFOIL_SUMMARY_TOOL_NAME,
@@ -37,13 +35,6 @@ export const SCIENCE_SUMMARY_SPEC: ToolSpecification = {
     name: SCIENCE_SUMMARY_TOOL_NAME,
     inputSchema: {
         json: JSON.stringify(SCIENCE_RESPONSE_SCHEMA)
-    } satisfies ToolInputSchema.JsonMember
-}
-
-export const ON_DEMAND_SUMMARY_SPEC: ToolSpecification = {
-    name: ON_DEMAND_SUMMARY_TOOL_NAME,
-    inputSchema: {
-        json: JSON.stringify(ON_DEMAND_RESPONSE_SCHEMA)
     } satisfies ToolInputSchema.JsonMember
 }
 
@@ -95,19 +86,6 @@ export const scienceSummaryToolConfiguration: ToolConfiguration = {
     toolChoice: {
         tool: {
             name: SCIENCE_SUMMARY_TOOL_NAME
-        }
-    }
-}
-
-export const onDemandSummaryToolConfiguration: ToolConfiguration = {
-    tools: [
-        {
-            toolSpec: ON_DEMAND_SUMMARY_SPEC
-        }
-    ],
-    toolChoice: {
-        tool: {
-            name: ON_DEMAND_SUMMARY_TOOL_NAME
         }
     }
 }

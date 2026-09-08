@@ -68,31 +68,6 @@ Response language
 Response language *should be the same* as the *transcript* language.
 `
 
-export const ON_DEMAND_SYSTEM_PROMPT_TEXT = `
-You are a helpful assistant that summarizes YouTube video content.
-
-Summarize the provided transcript into:
-1. A one-sentence TL;DR (shortSummary) capturing the main theme.
-2. 5-7 concise bullet points (summary) capturing the key takeaways.
-
-Keep bullet points brief (1-2 sentences each). Focus on facts, insights, and actionable information.
-Omit filler, intros, and off-topic remarks.
-Respond in the same language as the transcript.
-
-*Respond ONLY with valid JSON. Do not wrap in Markdown code blocks or add explanations.*
-`
-
-const getOnDemandSummaryPrompt = (transcription: string, instruction?: string): string => {
-    const task =
-        instruction?.trim() || 'Write the summary of the following transcript. Use the same language as the transcript.'
-    return `
-${task}
-<transcript>
-${transcription}
-</transcript>
-`
-}
-
 const getTinfoilSummaryPrompt = (transcription: string): string => {
     return `
 Streść poniższy tekst, używając ironicznego i sarkastycznego tonu.
@@ -137,7 +112,7 @@ ${transcription}
 `
 }
 
-export const getPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, transcription: string, instruction?: string) => {
+export const getPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, transcription: string) => {
     switch (genre) {
         case 'TINFOIL':
             return getTinfoilSummaryPrompt(transcription)
@@ -147,8 +122,6 @@ export const getPrompt = (genre: Exclude<VideoGenre, 'ALARM'>, transcription: st
             return getPoliticsSummaryPrompt(transcription)
         case 'SCIENCE':
             return getScienceSummaryPrompt(transcription)
-        case 'ON_DEMAND':
-            return getOnDemandSummaryPrompt(transcription, instruction)
         default:
             return assertNever(genre)
     }
