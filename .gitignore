@@ -4,6 +4,7 @@
 !src/types/layer-modules.d.ts
 *.d.ts
 node_modules
+.pnpm-store
 
 # CDK asset staging directory
 .cdk.staging

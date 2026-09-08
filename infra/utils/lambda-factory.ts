@@ -8,7 +8,7 @@ import { join } from 'path'
 
 const globalLambdaProps: Partial<NodejsFunctionProps> = {
     runtime: Runtime.NODEJS_22_X,
-    depsLockFilePath: join('src', 'package-lock.json')
+    depsLockFilePath: join('src', 'pnpm-lock.yaml')
 }
 
 type LambdaFactoryProps = Readonly<{

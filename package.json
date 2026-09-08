@@ -1,6 +1,7 @@
 {
   "name": "youtube-news",
   "version": "0.1.0",
+  "packageManager": "pnpm@11.19.0",
   "bin": {
     "youtube-news": "bin/youtube-news.js"
   },
