@@ -34,7 +34,7 @@ jobs:
       - name: Configure AWS Credentials (Diff Role)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/youtube-news-github-diff-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-diff-role
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Install dependencies
@@ -85,7 +85,7 @@ jobs:
       - name: Configure AWS Credentials (Deploy Role)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/youtube-news-github-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-deploy-role
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Install dependencies
